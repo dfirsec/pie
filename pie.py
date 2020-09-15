@@ -1,7 +1,3 @@
-__author__ = "DFIRSec (@pulsecode)"
-__version__ = "3.0"
-__description__ = "Extract Indicators of Compromise (IOCs) from PDF documents."
-
 import argparse
 import io
 import os
@@ -14,9 +10,13 @@ import pdfplumber
 
 from utils import Processor, Termcolor
 
+__author__ = "DFIRSec (@pulsecode)"
+__version__ = "0.0.5"
+__description__ = "Extract Indicators of Compromise (IOCs) from PDF documents."
+
 pc = Processor()
 tc = Termcolor()
-
+counter = 0
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent
@@ -40,11 +40,15 @@ def write_file(results, opt, rep):
 
 
 def pdf_processor(pdf_doc, output, title):
+    global counter
     try:
-        count = 0
         print(f"{tc.DOTSEP}\n{tc.GREEN} [ Gathering IOCs ]{tc.RESET}")
         pages = [page for page in extractor(file=pdf_doc)]
-        text = ''.join(pages)
+        try:
+            text = ''.join(filter(None, pages))
+        except TypeError:
+            print(f"Broken sentence: {text}")
+            raise
 
         # create output file
         if output:
@@ -52,42 +56,28 @@ def pdf_processor(pdf_doc, output, title):
                        results=f"\nTITLE: {title} \nPATH: {pdf_doc}\n",
                        opt='w')
 
+        def lang_proc(selection):
+            global counter
+            if pc.lang_patts(text).get(selection):
+                counter += 1
+                spec = ''.join(pc.lang_patts(text).get(selection))
+                print(f"\n{tc.FOUND}{tc.BOLD}{selection}{tc.RESET}\n{tc.SEP}\n{spec}")  # nopep8
+                if output:
+                    write_file(rep=title,
+                               results=f"\n{selection}\n{('-') * 15}\n{spec}",
+                               opt='a')
+                # remove from dict to not repeat pattern
+                pc.lang_patts(text).pop(selection)
+
         # Attempt to detect specific language characters
-        if pc.patts(text).get('ARABIC'):
-            count += 1
-            arabic = ''.join(pc.patts(text).get('ARABIC'))
-            print(f"\n{tc.FOUND}{tc.BOLD}ARABIC{tc.RESET}\n{tc.SEP}\n{arabic}")  # nopep8
-            if output:
-                write_file(rep=title,
-                           results=f"\nARABIC\n{('-') * 15}\n{arabic}",
-                           opt='a')
-            # remove from dict to not repeat pattern
-            pc.patts(text).pop('ARABIC')
-
-        if pc.patts(text).get('CYRILLIC'):
-            count += 1
-            cyrillic = ''.join(pc.patts(text).get('CYRILLIC'))
-            print(f"\n{tc.FOUND}{tc.BOLD}CYRILLIC{tc.RESET}\n{tc.SEP}\n{cyrillic}")  # nopep8
-            if output:
-                write_file(rep=title,
-                           results=f"\nCYRILLIC\n{('-') * 15}\n{cyrillic}",
-                           opt='a')
-            pc.patts(text).pop('CYRILLIC')
-
-        if pc.patts(text).get('CHINESE'):
-            count += 1
-            chinese = ''.join(pc.patts(text).get('CHINESE'))
-            print(f"\n{tc.FOUND}{tc.BOLD}CHINESE{tc.RESET}\n{tc.SEP}\n{chinese}")  # nopep8
-            if output:
-                write_file(rep=title,
-                           results=f"\nCHINESE\n{('-') * 15}\n{chinese}",
-                           opt='a')
-            pc.patts(text).pop('CHINESE')
+        languages = ['ARABIC', 'CYRILLIC', 'CHINESE',
+                     'FARSI', 'HEBREW']
+        list(map(lang_proc, languages))
 
         # Detect other pc.patts(text)
         for key, pattern in pc.patts(text).items():
             if pattern:
-                count += 1
+                counter += 1
                 sorted_set = sorted(set(pattern))
                 pattern = '\n'.join(sorted_set)
                 print(f"\n{tc.FOUND}{tc.BOLD}{key}{tc.RESET}\n{tc.SEP}\n{pattern}")  # nopep8
@@ -96,7 +86,7 @@ def pdf_processor(pdf_doc, output, title):
                                results=f"\n{key}\n{('-') * 15}\n{pattern}\n",
                                opt='a')
 
-        if count == 0:
+        if counter == 0:
             print(f"{tc.YELLOW}= No IOCs found ={tc.RESET}")
             if output:
                 write_file(rep=title, results="= No IOCs found =", opt='w')
@@ -104,7 +94,7 @@ def pdf_processor(pdf_doc, output, title):
     except FileNotFoundError:
         sys.exit(f"{tc.RED}[ERROR]{tc.RESET} No such file: {pdf_doc}")
     except Exception as err:
-        print(f"{tc.RED}[ERROR]{tc.RESET} {err}")
+        sys.exit(f"{tc.RED}[ERROR]{tc.RESET} {err}")
     except KeyboardInterrupt:
         sys.exit()
 
