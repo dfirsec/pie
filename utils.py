@@ -3,7 +3,6 @@ import re
 from colorama import Fore, Style, init
 
 __author__ = "DFIRSec (@pulsecode)"
-__version__ = "3.1.0"
 __description__ = "Extract Indicators of Compromise (IOCs) from PDF documents."
 
 
