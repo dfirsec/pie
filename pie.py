@@ -1,9 +1,6 @@
 import argparse
-import io
 import os
-import re
 import sys
-from ipaddress import IPv4Address
 from pathlib import Path
 
 import pdfplumber
