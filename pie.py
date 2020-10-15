@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 import pdfplumber
-
+import requests
 from utils import Processor, Termcolor
 
 __author__ = "DFIRSec (@pulsecode)"
@@ -62,7 +62,7 @@ def pdf_processor(pdf_doc, output, title):
                 print(f"\n{tc.FOUND}{tc.BOLD}{selection}{tc.RESET}\n{tc.SEP}\n{spec}")  # nopep8
                 if output:
                     write_file(rep=title,
-                               results=f"\n{selection}\n{('-') * 15}\n{spec}",
+                               results=f"\n{selection}\n{'-' * 15}\n{spec}",
                                opt='a')
                 # remove from dict to not repeat pattern
                 pc.lang_patts(text).pop(selection)
@@ -103,6 +103,14 @@ def main():
     p.add_argument('-o', '--out', dest='output',
                    action='store_true', help="Write output to file")
     args = p.parse_args()
+
+    # check if new version is available
+    try:
+        latest = requests.get("https://api.github.com/repos/dfirsec/pie/releases/latest").json()["tag_name"]  # nopep8
+        if latest != __version__:
+            print(f"{tc.YELLOW}* Release {latest} of PIE is available{tc.RESET}")  # nopep8
+    except Exception as err:
+        print(err)
 
     if len(sys.argv[1:]) == 0:
         p.print_help()
