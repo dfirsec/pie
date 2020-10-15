@@ -8,7 +8,7 @@ import pdfplumber
 from utils import Processor, Termcolor
 
 __author__ = "DFIRSec (@pulsecode)"
-__version__ = "0.0.5"
+__version__ = "v0.0.6"
 __description__ = "Extract Indicators of Compromise (IOCs) from PDF documents."
 
 pc = Processor()
@@ -16,13 +16,14 @@ tc = Termcolor()
 counter = 0
 
 # Base directory
-BASE_DIR = Path(__file__).resolve().parent
+parent = Path(__file__).resolve().parent
 
 
 def extractor(file):
     fsize = os.path.getsize(file)
     if fsize > 10240000:
-        sys.exit(f"{tc.RED}[ERROR]{tc.RESET} Limit file size to 10 MB or less. Your file is {(round(fsize/(1024*1024))):,} MB.")  # nopep8
+        sys.exit(
+            f"{tc.RED}[ERROR]{tc.RESET} Limit file size to 10 MB or less. Your file is {(round(fsize / (1024 * 1024))):,} MB.")  # nopep8
     else:
         with pdfplumber.open(file) as pdf:
             for pages in pdf.pages:
@@ -31,13 +32,13 @@ def extractor(file):
 
 def write_file(results, opt, rep):
     if rep:
-        FOUT = BASE_DIR.joinpath(f"{rep.replace(' ', '_').replace('.pdf', '')}.txt")  # nopep8
-        with open(FOUT, opt) as out:
+        fout = parent.joinpath(f"{rep.replace(' ', '_').replace('.pdf', '')}.txt")  # nopep8
+        with open(fout, opt) as out:
             out.write(results)
 
 
 def pdf_processor(pdf_doc, output, title):
-    global counter
+    global counter, text
     try:
         print(f"{tc.DOTSEP}\n{tc.GREEN} [ Gathering IOCs ]{tc.RESET}")
         pages = [page for page in extractor(file=pdf_doc)]
@@ -80,7 +81,7 @@ def pdf_processor(pdf_doc, output, title):
                 print(f"\n{tc.FOUND}{tc.BOLD}{key}{tc.RESET}\n{tc.SEP}\n{pattern}")  # nopep8
                 if output:
                     write_file(rep=title,
-                               results=f"\n{key}\n{('-') * 15}\n{pattern}\n",
+                               results=f"\n{key}\n{'-' * 15}\n{pattern}\n",
                                opt='a')
 
         if counter == 0:
@@ -124,7 +125,7 @@ if __name__ == "__main__":
      / ____/  _/ /   / /___
     /_/      /___/  /_____/
 
-    PDF IOC Extractor v{__version__}
+    PDF IOC Extractor {__version__}
     """
 
     print(f"{tc.CYAN}{banner}{tc.RESET}")

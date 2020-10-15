@@ -6,7 +6,7 @@ __author__ = "DFIRSec (@pulsecode)"
 __description__ = "Extract Indicators of Compromise (IOCs) from PDF documents."
 
 
-class Processor():
+class Processor:
     @staticmethod
     def regex(_type):
         pattern = dict(
@@ -21,14 +21,23 @@ class Processor():
             sha256=r"\b[A-Fa-f0-9]{64}\b",
             sha512=r"\b[A-Fa-f0-9]{128}\b",
             # web-related
-            domain=r"([A-Za-z0-9]+(?:[\-|\.|][A-Za-z0-9]+)*(?<!fireeye)(?:\[\.\]|\.)(?![a-z-]*.\.gov|gov|add|ako|asn|asp|bat|bak|bin|bmp|class|cpj|conf|dat|db|dll|dns|doc|drv|dx|exe|gif|gov|gz|hta|htm|http|img|inf|ini|jar|java|jsp|jpg|key|lnk|log|md|min|msi|mtx|nat|rar|rer|rpm|out|pcap|pdf|php|png|ps|py|src|sh|sys|tmp|txt|user|vbe|vbs|xls|xml|xpm|zip|[i\.e]$|[e\.g]$)(?:[a-z]{2,4})\b|(?:\[\.\][a-z]{2,4})(?!@)$)",
-            email=r"([a-zA-Z0-9_.+-]+(\[@\]|@)(?!fireeye)[a-zA-Z0-9-.]+(\.|\[\.\])(?![a-z-]+\.gov|gov)([a-zA-Z0-9-.]{2,6}\b))",
-            ipv4=r"(((?![0])(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\[\.\]|\.))){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)",
-            url=r"((http|hxxp)[s]?:\/\/(?!.+\.gov|gov)(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:[0-9a-fA-F][0-9a-fA-F]))+(?<![\s\W]))",
+            domain=r"([A-Za-z0-9]+(?:[\-|\.|][A-Za-z0-9]+)*(?<!fireeye)(?:\[\.\]|\.)(?!["
+                   r"a-z-]*.\.gov|gov|add|ako|area|asn|asp|bar|bat|bak|bin|bmp|cfg|class|cpj|conf|copy|dat|db|dll|dis"
+                   r"|dns|doc|div|drv|dx|exe|file|foo|get|gif|gov|gz|hta|htm|http|img|inf|ini|jar|java|jsp|jpg|key"
+                   r"|lnk|log|md|min|msi|mtx|mul|nat|name|rar|rer|rpm|out|pack|pcap|pdf|php|pop|png|ps|put|py|src|sh"
+                   r"|sort|sys|tmp|txt|user|vbe|vbs|xls|xml|xpm|zip|[i\.e]$|[e\.g]$)(?:[a-z]{2,4})\b|(?:\[\.\][a-z]{"
+                   r"2,4})(?!@)$)",
+            email=r"([a-zA-Z0-9_.+-]+(\[@\]|@)(?!fireeye)[a-zA-Z0-9-.]+(\.|\[\.\])(?![a-z-]+\.gov|gov)([a-zA-Z0-9-.]{"
+                  r"2,6}\b))",
+            ipv4=r"(((?![0])(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\[\.\]|\.))){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9]["
+                 r"0-9]?)",
+            url=r"((http|hxxp)[s]?:\/\/(?!.+\.gov|gov)(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:[0-9a-fA-F]["
+                r"0-9a-fA-F]))+(?<![\s\W]))",
             webfile=r"(([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+(\.|\[\.\])(hta|html|htm|htmls|java|jsp|js|php|asp$|aspx))",
             # file-related
             archive=r"(([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+(\.|\[\.\])(zip|7z|jar|gz|rar|xz|tar|tar\.gz))",
-            binary=r"(([^\s|\W])+([a-z-A-Z0-9\-\_]|[\u4E00-\u9FFF]|[\u0400-\u04FF])+((?:\.exe)|(?:\.msi)|(?:\.dll)|(?:\.bin)))",
+            binary=r"(([^\s|\W])+([a-z-A-Z0-9\-\_]|[\u4E00-\u9FFF]|[\u0400-\u04FF])+((?:\.exe)|(?:\.msi)|(?:\.dll)|("
+                   r"?:\.bin)))",
             env_var=r"(\%+[a-zA-Z0-9]+\%.*[^\"])",
             image=r"(([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+(\.|\[\.\])(bmp|gif|jpg|jpeg|png|svg|tiff|wepb))",
             misc_file=r"(([^\s|\W])+([a-z-A-Z0-9\-\_])+((?:\.txt)|(?:\.csv)))",
@@ -41,10 +50,17 @@ class Processor():
             # pii
             address=r"(^(\d+)\s?([A-Za-z](?=\s))?\s(.*?)\s([^ ]+?)\s?((?<=\s)APT)?\s?((?<=\s)\d*)?$)",
             cc=r"((?:(?:\\d{4}[- ]?){3}\\d{4}|\\d{15,16}))(?![\\d])",
-            date=r"(?:(?<!\:)(?<!\:\d)[0-3]?\d(?:st|nd|rd|th)?\s+(?:of\s+)?(?:jan\.?|january|feb\.?|february|mar\.?|march|apr\.?|april|may|jun\.?|june|jul\.?|july|aug\.?|august|sep\.?|september|oct\.?|october|nov\.?|november|dec\.?|december)|(?:jan\.?|january|feb\.?|february|mar\.?|march|apr\.?|april|may|jun\.?|june|jul\.?|july|aug\.?|august|sep\.?|september|oct\.?|october|nov\.?|november|dec\.?|december)\s+(?<!\:)(?<!\:\d)[0-3]?\d(?:st|nd|rd|th)?)(?:\,)?\s*(?:\d{4})?|[0-3]?\d[-\./][0-3]?\d[-\./]\d{2,4}",
-            phone=r"(^(?:(?<![\d-])(?:\+?\d{1,3}[-.\s*]?)?(?:\(?\d{3}\)?[-.\s*]?)?\d{3}[-.\s*]?\d{4}(?![\d-]))|(?:(?<![\d-])(?:(?:\(\+?\d{2}\))|(?:\+?\d{2}))\s*\d{2}\s*\d{3}\s*\d{4}(?![\d-]))\$)",
+            date=r"(?:(?<!\:)(?<!\:\d)[0-3]?\d(?:st|nd|rd|th)?\s+(?:of\s+)?("
+                 r"?:jan\.?|january|feb\.?|february|mar\.?|march|apr\.?|april|may|jun\.?|june|jul\.?|july|aug"
+                 r"\.?|august|sep\.?|september|oct\.?|october|nov\.?|november|dec\.?|december)|("
+                 r"?:jan\.?|january|feb\.?|february|mar\.?|march|apr\.?|april|may|jun\.?|june|jul\.?|july|aug"
+                 r"\.?|august|sep\.?|september|oct\.?|october|nov\.?|november|dec\.?|december)\s+(?<!\:)(?<!\:\d)["
+                 r"0-3]?\d(?:st|nd|rd|th)?)(?:\,)?\s*(?:\d{4})?|[0-3]?\d[-\./][0-3]?\d[-\./]\d{2,4}",
+            phone=r"(^(?:(?<![\d-])(?:\+?\d{1,3}[-.\s*]?)?(?:\(?\d{3}\)?[-.\s*]?)?\d{3}[-.\s*]?\d{4}(?![\d-]))|(?:("
+                  r"?<![\d-])(?:(?:\(\+?\d{2}\))|(?:\+?\d{2}))\s*\d{2}\s*\d{3}\s*\d{4}(?![\d-]))\$)",
             po_box=r"P\.? ?O\.? Box \d+",
-            ssn=r"(?!000|666|333)0*(?:[0-6][0-9][0-9]|[0-7][0-6][0-9]|[0-7][0-7][0-2])[- ](?!00)[0-9]{2}[- ](?!0000)[0-9]{4}",
+            ssn=r"(?!000|666|333)0*(?:[0-6][0-9][0-9]|[0-7][0-6][0-9]|[0-7][0-7][0-2])[- ](?!00)[0-9]{2}[- ](?!0000)["
+                r"0-9]{4}",
             zip_code=r"\b\d{5}(?:[-\s]\d{4})?\b"
         )
         return re.compile(pattern[_type])
@@ -87,7 +103,7 @@ class Processor():
 
 
 class Termcolor:
-    # Initizlize colorama
+    # Initialize colorama
     init()
 
     BOLD = Fore.LIGHTWHITE_EX
