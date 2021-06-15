@@ -6,7 +6,7 @@ __author__ = "DFIRSec (@pulsecode)"
 __description__ = "Extract Indicators of Compromise (IOCs) from PDF documents."
 
 
-class Processor:
+class Helpers:
     @staticmethod
     def regex(_type):
         pattern = dict(
