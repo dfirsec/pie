@@ -95,14 +95,6 @@ def main():
     p.add_argument("-o", "--out", dest="output", action="store_true", help="Write output to file")
     args = p.parse_args()
 
-    # check if new version is available
-    try:
-        latest = requests.get("https://api.github.com/repos/dfirsec/pie/releases/latest").json()["tag_name"]
-        if latest != __version__:
-            print(f"{tc.YELLOW}* Release {latest} of PIE is available{tc.RESET}")
-    except Exception as err:
-        print(err)
-
     if len(sys.argv[1:]) == 0:
         p.print_help()
         p.exit()
