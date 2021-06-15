@@ -26,8 +26,8 @@ def extractor(pdf):
     if fsize > 10240000:
         sys.exit(f"{tc.RED}[ERROR]{tc.RESET} Limit file size to 10 MB or less. Your file is {toobig:,} MB.")
     else:
-        with pdfplumber.open(pdf) as pdf:
-            for page in pdf.pages:
+        with pdfplumber.open(pdf) as pdf_file:
+            for page in pdf_file.pages:
                 yield page.extract_text()
 
 
@@ -42,7 +42,7 @@ def pdf_processor(pdf_doc, output, title):
     global counter, text
     try:
         print(f"{tc.DOTSEP}\n{tc.GREEN} [ Gathering IOCs ]{tc.RESET}")
-        pages = [page for page in extractor(pdf=pdf_doc)]
+        pages = list(extractor(pdf=pdf_doc))
         try:
             text = "".join(filter(None, pages))
         except TypeError:
