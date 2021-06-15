@@ -39,6 +39,7 @@ def write_file(results, opt, rep):
 
 
 def pdf_processor(pdf_doc, output, title):
+    global counter
     try:
         print(f"{tc.DOTSEP}\n{tc.GREEN} [ Gathering IOCs ]{tc.RESET}")
         pages = list(extractor(pdf=pdf_doc))
@@ -84,8 +85,6 @@ def pdf_processor(pdf_doc, output, title):
 
     except FileNotFoundError:
         sys.exit(f"{tc.RED}[ERROR]{tc.RESET} No such file: {pdf_doc}")
-    except Exception as err:
-        sys.exit(f"{tc.RED}[ERROR]{tc.RESET} {err}")
     except KeyboardInterrupt:
         sys.exit()
 
