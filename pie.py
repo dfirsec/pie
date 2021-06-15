@@ -39,7 +39,6 @@ def write_file(results, opt, rep):
 
 
 def pdf_processor(pdf_doc, output, title):
-    global counter, text
     try:
         print(f"{tc.DOTSEP}\n{tc.GREEN} [ Gathering IOCs ]{tc.RESET}")
         pages = list(extractor(pdf=pdf_doc))
