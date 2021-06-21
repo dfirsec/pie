@@ -22,7 +22,7 @@ class Helpers:
             sha512=r"\b[A-Fa-f0-9]{128}\b",
             # web-related
             domain=r"([A-Za-z0-9]+(?:[\-|\.|][A-Za-z0-9]+)*(?<!fireeye)(?:\[\.\]|\.)(?!["
-            r"a-z-]*.\.gov|gov|add|ako|area|argv|asn|asp|bar|bat|bak|bin|bmp|btz|cfg|class|cpj|conf|copy|dat|db|dll"
+            r"a-z-]*.\.gov|gov|add|ako|area|argv|asn|asp|bar|bat|bak|bin|bmp|btz|cfg|cfm|class|cpj|conf|copy|dat|db|dll"
             r"|dis|dns|doc|div|drv|dx|err|exe|file|foo|get|gif|gov|gz|hta|htm|http|img|inf|ini|jar|java|jsp|jpg"
             r"|key|lnk|log|md|min|msi|mtx|mul|nat|name|rar|rer|rpm|out|pack|pcap|pdf|php|pop|png|ps|put|py|src"
             r"|sh|sort|sys|tmp|txt|user|vbe|vbs|xls|xml|xpm|zip|[i\.e]$|[e\.g]$)(?:[a-z]{2,4})\b|(?:\[\.\][a-z]{"

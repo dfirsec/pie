@@ -1,10 +1,10 @@
 import argparse
 import os
 import sys
+from ipaddress import IPv4Address
 from pathlib import Path
 
 import pdfplumber
-import requests
 
 from utils import Helpers, Termcolor
 
@@ -63,7 +63,7 @@ class PDF_Processor:
                     if output:
                         write_file(rep=title, results=f"\n{selection}\n{'-' * 15}\n{spec}", opt="a")
 
-                    # remove from dict to not repeat pattern
+                    # remove from dict to avoid repeat pattern
                     hlp.lang_patts(text).pop(selection)
 
             # Attempt to detect specific language characters
