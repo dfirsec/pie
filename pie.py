@@ -1,7 +1,6 @@
 import argparse
 import os
 import sys
-from ipaddress import IPv4Address
 from pathlib import Path
 
 import pdfplumber
@@ -39,6 +38,7 @@ def write_file(results, opt, rep):
 
 class PDF_Processor:
     def __init__(self):
+        """Processes PDF file."""
         self.counter = 0
 
     def processor(self, pdf_doc, output, title):
