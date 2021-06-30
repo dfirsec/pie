@@ -22,7 +22,9 @@ def extractor(pdf):
     size = os.path.getsize(pdf)
     toobig = round(size / (1024 * 1024))
     if size > 10240000:
-        sys.exit(f"{tc.RED}[ERROR]{tc.RESET} Limit file size to 10 MB or less. Your file is {toobig:,} MB.")
+        sys.exit(
+            f"{tc.RED}[ERROR]{tc.RESET} Limit file size to 10 MB or less. Your file is {toobig:,} MB."
+        )
     else:
         with pdfplumber.open(pdf) as pdf_file:
             for page in pdf_file.pages:
@@ -53,15 +55,23 @@ class PDF_Processor:
 
             # create output file
             if output:
-                write_file(rep=title, results=f"\nTITLE: {title} \nPATH: {pdf_doc}\n", opt="w")
+                write_file(
+                    rep=title, results=f"\nTITLE: {title} \nPATH: {pdf_doc}\n", opt="w"
+                )
 
             def lang_proc(selection):
                 if hlp.lang_patts(text).get(selection):
                     self.counter += 1
                     spec = "".join(hlp.lang_patts(text).get(selection))
-                    print(f"\n{tc.FOUND}{tc.BOLD}{selection}{tc.RESET}\n{tc.SEP}\n{spec}")
+                    print(
+                        f"\n{tc.FOUND}{tc.BOLD}{selection}{tc.RESET}\n{tc.SEP}\n{spec}"
+                    )
                     if output:
-                        write_file(rep=title, results=f"\n{selection}\n{'-' * 15}\n{spec}", opt="a")
+                        write_file(
+                            rep=title,
+                            results=f"\n{selection}\n{'-' * 15}\n{spec}",
+                            opt="a",
+                        )
 
                     # remove from dict to avoid repeat pattern
                     hlp.lang_patts(text).pop(selection)
@@ -78,7 +88,11 @@ class PDF_Processor:
                     pattern = "\n".join(sorted_set)
                     print(f"\n{tc.FOUND}{tc.BOLD}{key}{tc.RESET}\n{tc.SEP}\n{pattern}")
                     if output:
-                        write_file(rep=title, results=f"\n{key}\n{'-' * 15}\n{pattern}\n", opt="a")
+                        write_file(
+                            rep=title,
+                            results=f"\n{key}\n{'-' * 15}\n{pattern}\n",
+                            opt="a",
+                        )
 
             if self.counter == 0:
                 print(f"{tc.YELLOW}= No IOCs found ={tc.RESET}")
@@ -94,7 +108,9 @@ class PDF_Processor:
 def main():
     parser = argparse.ArgumentParser(description="PDF IOC Extractor")
     parser.add_argument(dest="pdf_doc", help="Path to single PDF document")
-    parser.add_argument("-o", "--out", dest="output", action="store_true", help="Write output to file")
+    parser.add_argument(
+        "-o", "--out", dest="output", action="store_true", help="Write output to file"
+    )
     args = parser.parse_args()
 
     if len(sys.argv[1:]) == 0:
