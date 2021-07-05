@@ -36,9 +36,10 @@ def write_file(results, opt, rep):
             out.write(results)
 
 
-class PDF_Processor:
+class PDFWorker:
+    """Processes PDF file."""
+
     def __init__(self):
-        """Processes PDF file."""
         self.counter = 0
 
     def processor(self, pdf_doc, output, title):
@@ -107,8 +108,8 @@ def main():
     else:
         title = args.pdf_doc.split("/")[-1]
 
-    pdf_processor = PDF_Processor()
-    pdf_processor.processor(pdf_doc=args.pdf_doc, output=args.output, title=title)
+    worker = PDFWorker()
+    worker.processor(pdf_doc=args.pdf_doc, output=args.output, title=title)
 
 
 if __name__ == "__main__":
