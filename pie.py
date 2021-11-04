@@ -5,14 +5,14 @@ from pathlib import Path
 
 import pdfplumber
 
-from utils import Helpers, Termcolor
+from utils import Helpers, Termcolors
 
 __author__ = "DFIRSec (@pulsecode)"
 __version__ = "v0.0.7"
 __description__ = "Extract Indicators of Compromise (IOCs) from PDF documents."
 
 hlp = Helpers()
-tc = Termcolor()
+tc = Termcolors()
 
 # Base directory
 parent = Path(__file__).resolve().parent
@@ -20,9 +20,9 @@ parent = Path(__file__).resolve().parent
 
 def extractor(pdf):
     size = os.path.getsize(pdf)
-    toobig = round(size / (1024 * 1024))
+    large = round(size / (1024 * 1024))
     if size > 10240000:
-        sys.exit(f"{tc.RED}[ERROR]{tc.RESET} Limit file size to 10 MB or less. Your file is {toobig:,} MB.")
+        sys.exit(f"{tc.RED}[ERROR]{tc.RESET} Limit file size to 10 MB or less. Your file is {large:,} MB.")
     else:
         with pdfplumber.open(pdf) as pdf_file:
             for page in pdf_file.pages:
@@ -31,8 +31,8 @@ def extractor(pdf):
 
 def write_file(results, opt, rep):
     if rep:
-        fout = parent.joinpath(f"{rep.replace(' ', '_').replace('.pdf', '')}.txt")
-        with open(fout, opt) as out:
+        file_output = parent.joinpath(f"{rep.replace(' ', '_').replace('.pdf', '')}.txt")
+        with open(file_output, opt, encoding="utf-8") as out:
             out.write(results)
 
 
