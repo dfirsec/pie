@@ -4,14 +4,16 @@ import sys
 from pathlib import Path
 
 import pdfplumber
+from tld import is_tld
+from tld.utils import update_tld_names
 
 from utils import Helpers, Termcolors
 
 __author__ = "DFIRSec (@pulsecode)"
-__version__ = "v0.0.7"
+__version__ = "v0.0.8"
 __description__ = "Extract Indicators of Compromise (IOCs) from PDF documents."
 
-hlp = Helpers()
+helper = Helpers()
 tc = Termcolors()
 
 # Base directory
@@ -56,26 +58,38 @@ class PDFWorker:
             if output:
                 write_file(rep=title, results=f"\nTITLE: {title} \nPATH: {pdf_doc}\n", opt="w")
 
+            # Language detection
             def lang_proc(selection):
-                if hlp.lang_patts(text).get(selection):
+                if helper.lang_patts(text).get(selection):
                     self.counter += 1
-                    spec = "".join(hlp.lang_patts(text).get(selection))
+                    spec = "".join(helper.lang_patts(text).get(selection))
                     print(f"\n{tc.FOUND}{tc.BOLD}{selection}{tc.RESET}\n{tc.SEP}\n{spec}")
                     if output:
                         write_file(rep=title, results=f"\n{selection}\n{'-' * 15}\n{spec}", opt="a")
 
                     # remove from dict to avoid repeat pattern
-                    hlp.lang_patts(text).pop(selection)
+                    helper.lang_patts(text).pop(selection)
 
             # Attempt to detect specific language characters
             languages = ["ARABIC", "CYRILLIC", "CHINESE", "FARSI", "HEBREW"]
             list(map(lang_proc, languages))
 
-            # Detect other pc.patts(text)
-            for key, pattern in hlp.patts(text).items():
+            # Detect patterns
+            exclude = ("gov", "foo", "bar", "py")
+            for key, pattern in helper.patts(text).items():
                 if pattern:
                     self.counter += 1
                     sorted_set = sorted(set(pattern))
+
+                    if key == "DOMAIN":
+                        for domain in pattern:
+                            tld = domain.split(".")[-1]
+                            try:
+                                while not is_tld(tld) or tld in exclude:
+                                    sorted_set.remove(domain)
+                            except ValueError:
+                                pass
+
                     pattern = "\n".join(sorted_set)
                     print(f"\n{tc.FOUND}{tc.BOLD}{key}{tc.RESET}\n{tc.SEP}\n{pattern}")
                     if output:
@@ -108,8 +122,13 @@ def main():
     else:
         title = args.pdf_doc.split("/")[-1]
 
+    # update/sync tld names
+    # update_tld_names()
+
     worker = PDFWorker()
     worker.processor(pdf_doc=args.pdf_doc, output=args.output, title=title)
+
+
 
 
 if __name__ == "__main__":
