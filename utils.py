@@ -70,16 +70,15 @@ class Helpers:
         return [x.group() for x in re.finditer(regex, text.lower())]
 
     def lang_patts(self, text):
-        patterns = {
+        return {
             "ARABIC": self.reiter(self.regex(_type="arabic"), text),
             "CHINESE": self.reiter(self.regex(_type="chinese"), text),
             "CYRILLIC": self.reiter(self.regex(_type="cyrillic"), text),
             "HEBREW": self.reiter(self.regex(_type="hebrew"), text),
         }
-        return patterns
 
     def patts(self, text):
-        patterns = {
+        return {
             "ARCHIVE": self.reiter(self.regex(_type="archive"), text),
             "BINARY": self.reiter(self.regex(_type="binary"), text),
             "BTC": self.reiter(self.regex(_type="btc"), text),
@@ -99,7 +98,6 @@ class Helpers:
             "WEB FILE": self.reiter(self.regex(_type="webfile"), text),
             "WIN DIR": self.reiter(self.regex(_type="windir"), text),
         }
-        return patterns
 
 
 class Termcolors:

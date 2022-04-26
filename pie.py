@@ -16,6 +16,9 @@ __description__ = "Extract Indicators of Compromise (IOCs) from PDF documents."
 helper = Helpers()
 tc = Termcolors()
 
+# update/sync tld names
+update_tld_names()
+
 # Base directory
 parent = Path(__file__).resolve().parent
 
@@ -45,15 +48,14 @@ class PDFWorker:
         self.counter = 0
 
     def processor(self, pdf_doc, output, title):
+        print(f"{tc.DOTSEP}\n{tc.GREEN} [ Gathering IOCs ]{tc.RESET}")
+        pages = list(extractor(pdf=pdf_doc))
         try:
-            print(f"{tc.DOTSEP}\n{tc.GREEN} [ Gathering IOCs ]{tc.RESET}")
-            pages = list(extractor(pdf=pdf_doc))
-            try:
-                text = "".join(filter(None, pages))
-            except TypeError:
-                print(f"Broken sentence: {''.join(filter(None, pages))}")
-                raise
-
+            text = "".join(filter(None, pages))
+        except TypeError:
+            print(f"Broken sentence: {''.join(filter(None, pages))}")
+            raise
+        else:
             # create output file
             if output:
                 write_file(rep=title, results=f"\nTITLE: {title} \nPATH: {pdf_doc}\n", opt="w")
@@ -100,11 +102,6 @@ class PDFWorker:
                 if output:
                     write_file(rep=title, results="= No IOCs found =", opt="w")
 
-        except FileNotFoundError:
-            sys.exit(f"{tc.RED}[ERROR]{tc.RESET} No such file: {pdf_doc}")
-        except KeyboardInterrupt:
-            sys.exit()
-
 
 def main():
     parser = argparse.ArgumentParser(description="PDF IOC Extractor")
@@ -116,23 +113,20 @@ def main():
         parser.print_help()
         parser.exit()
 
+    if not Path(args.pdf_doc).is_file():
+        raise SystemExit(f"{tc.RED}[ERROR]{tc.RESET} No such file: {args.pdf_doc}")
+
     title = ""
     if "\\" in args.pdf_doc:
         title = args.pdf_doc.split("\\")[-1]
     else:
         title = args.pdf_doc.split("/")[-1]
-
-    # update/sync tld names
-    # update_tld_names()
-
     worker = PDFWorker()
     worker.processor(pdf_doc=args.pdf_doc, output=args.output, title=title)
 
 
-
-
 if __name__ == "__main__":
-    banner = fr"""
+    banner = rf"""
         ____     ____   ______
        / __ \   /  _/  / ____/
       / /_/ /   / /   / __/
