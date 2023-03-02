@@ -87,7 +87,7 @@ class PDFWorker:
         self.get_patterns(output, title, pdfdoc, text)
 
     def get_patterns(self, output: bool, title: str, pdfdoc: str, text: str) -> None:
-        # sourcery skip: low-code-quality
+        # sourcery skip: low-code-quality, use-named-expression
         """Create output file"""
         if output:
             write_file(report=title, results=f"\nTITLE: {title} \nPATH: {pdfdoc}\n", opt="w")
@@ -97,30 +97,33 @@ class PDFWorker:
         languages = ["ARABIC", "CYRILLIC", "CHINESE", "FARSI", "HEBREW"]
         for language in languages:
             if detected_language.get(language):
-                self.counter += 1
                 if spec := "".join(detected_language[language]):
+                    self.counter += 1
                     print(f"\n{TC.FOUND}{TC.BOLD}{language}{TC.RESET}\n{TC.SEP}\n{spec}")
                     if output:
                         write_file(report=title, results=f"\n{language}\n{'-' * 15}\n{spec}", opt="a")
 
         # Detect patterns
         exclude = ("gov", "foo", "bar", "py")
-        for key, pattern in HELPER.patts(text).items():
-            if pattern:
-                self.counter += 1
-                sorted_patterns = sorted(set(pattern))
+        for key, pvals in HELPER.patts(text).items():
+            if pvals:
+                sorted_patterns = sorted(set(pvals))
+                if sorted_patterns:
+                    self.counter += 1
 
                 if key == "DOMAIN":
-                    for domain in pattern:
+                    new_patterns = set()
+                    for domain in sorted_patterns:
                         tld = domain.split(".")[-1]
-                        with contextlib.suppress(ValueError):
-                            while not is_tld(tld) or tld in exclude:
-                                sorted_patterns.remove(domain)
+                        if is_tld(tld) and tld not in exclude:
+                            new_patterns.add(domain)
+                        sorted_patterns = new_patterns
+
                 pattern = "\n".join(sorted_patterns)
-            if pattern:
-                print(f"\n{TC.FOUND}{TC.BOLD}{key}{TC.RESET}\n{TC.SEP}\n{pattern}")
-                if output:
-                    write_file(report=title, results=f"\n{key}\n{'-' * 15}\n{pattern}\n", opt="a")
+                if pattern:
+                    print(f"\n{TC.FOUND}{TC.BOLD}{key}{TC.RESET}\n{TC.SEP}\n{pattern}")
+                    if output:
+                        write_file(report=title, results=f"\n{key}\n{'-' * 15}\n{pattern}\n", opt="a")
 
         if self.counter == 0:
             print(f"{TC.YELLOW}= No IOCs found ={TC.RESET}")

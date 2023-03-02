@@ -15,8 +15,7 @@ class Helpers:
                 "arabic": re.compile(r"[\u0600-\u06FF\u0698\u067E\u0686\u06AF]"),
                 "chinese": re.compile(r"[\u4E00-\u9FFF]"),
                 "cyrillic": re.compile(r"[\u0400-\u04FF]"),
-                # "hebrew": re.compile(r"[\u0590-\u05FF]"),
-                "hebrew": re.compile(r"[\u0590-\u05FF\uFB2A-\uFB4E]")
+                "hebrew": re.compile(r"[\u0590-\u05FF\uFB2A-\uFB4E]"),
             },
             "hashes": {
                 "md5": re.compile(r"\b[A-Fa-f0-9]{32}\b"),
@@ -30,6 +29,14 @@ class Helpers:
                     r"|[e\.g]$)(?:[a-z]"
                     r"{2,4})\b|(?:\[\.\][a-z]{2,4})(?!@)$)"
                 ),
+                # "domain": re.compile(
+                #     r"([A-Za-z0-9]+(?:[\-|\.|][A-Za-z0-9]+)*(?<!fireeye)(?:\[\.\]|\.)(?!["
+                #     r"a-z-]*.\.add|ako|also|area|argv|asn|asp|bar|bat|bak|bin|bmp|btz|cfg|cfm|class|cpj|conf|copy|dat"
+                #     r"|db|dll|dis|dns|doc|div|drv|dx|err|exe|file|foo|get|gif|gov|gz|hta|htm|http|img|inf|ini|jar"
+                #     r"|java|jsp|jpg|key|lnk|log|md|min|msi|mtx|mul|nat|name|rar|rer|rpm|out|pack|pcap|pdf|php|pop"
+                #     r"|png|ps|put|py|src|sh|sort|subj|sys|tmp|txt|user|vbe|vbs|xls|xml|xpm|zip"
+                #     r"|[i\.e]$|[e\.g]$)(?:[a-z]{2,4})\b|(?:\[\.\][a-z]{2,4})(?!@)$)"
+                # ),
                 "email": re.compile(
                     r"([a-zA-Z0-9_.+-]+(\[@\]|@)(?!fireeye)[a-zA-Z0-9-.]+(\.|\[\.\])(?![a-z-]+\.gov|gov)"
                     r"([a-zA-Z0-9-.]{2,6}\b))"
@@ -68,7 +75,7 @@ class Helpers:
                 ),
             },
             "misc": {
-                # "btc": re.compile(r"^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$)"),
+                "btc": re.compile(r"(^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$)"),
                 "base64": re.compile(
                     r"(^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$)"
                 ),
@@ -77,7 +84,12 @@ class Helpers:
                 "address": re.compile(
                     r"(^(\d+)\s?([A-Za-z](?=\s))?\s(.*?)\s([^ ]+?)\s?((?<=\s)APT)?\s?((?<=\s)\d*)?$)"
                 ),
-                # "cc": re.compile(r"((?:(?:\\d{4}[- ]?){3}\\d{4}|\\d{15,16}))(?![\\d]))"),
+                "cc": re.compile(
+                    r"(^4[0-9]{12}(?:[0-9]{3})?$)|(^(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}"
+                    r"|27[01][0-9]|2720)[0-9]{12}$)|(3[47][0-9]{13})|(^3(?:0[0-5]|[68][0-9])[0-9]{11}$)"
+                    r"|(^6(?:011|5[0-9]{2})[0-9]{12}$)|(^(?:2131|1800|35\d{3})\d{11}$)",
+                    re.MULTILINE,
+                ),
                 "date": re.compile(
                     r"(?:(?<!\:)(?<!\:\d)[0-3]?\d(?:st|nd|rd|th)?\s+(?:of\s+)?("
                     r"?:jan\.?|january|feb\.?|february|mar\.?|march|apr\.?|april|may|jun\.?|june|jul\.?|july|aug"
@@ -92,10 +104,10 @@ class Helpers:
                     r"?<![\d-])(?:(?:\(\+?\d{2}\))|(?:\+?\d{2}))\s*\d{2}\s*\d{3}\s*\d{4}(?![\d-]))\$)"
                 ),
                 "po_box": re.compile(r"P\.? ?O\.? Box \d+"),
-                # "ssn": re.compile(
-                #     r"(?!000|666|333)0*(?:[0-6][0-9][0-9]|[0-7][0-6][0-9]|[0-7][0-7][0-2])[- ](?!00))"
-                #     r"[0-9]{2}[- ](?!0000)[0-9]{4}"
-                # ),
+                "ssn": re.compile(
+                    r"((?!000|666|333)0*(?:[0-6][0-9][0-9]|[0-7][0-6][0-9]|[0-7][0-7][0-2])[- ]"
+                    r"(?!00))[0-9]{2}[- ](?!0000)[0-9]{4}"
+                ),
                 "zip_code": re.compile(r"\b\d{5}(?:[-\s]\d{4})?\b"),
             },
         }
