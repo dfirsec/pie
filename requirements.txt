@@ -1,4 +1,0 @@
-colorama
-pdfplumber
-requests
-tld
