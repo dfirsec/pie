@@ -7,9 +7,9 @@ Quick method to extract Indicators of Compromise (IOCs) from an Threat Intel Rep
 ## Installation
 
 ```text
-$ git clone https://github.com/dfirsec/pie.git
-$ cd pie
-$ pip install -r requirements.txt
+git clone https://github.com/dfirsec/pie.git
+cd pie
+pip install -r requirements.txt
 ```
 
 ## Usage
