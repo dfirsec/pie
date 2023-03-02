@@ -5,7 +5,6 @@ import argparse
 import contextlib
 import os
 import sys
-import unicodedata
 from pathlib import Path
 from typing import Optional
 
@@ -30,11 +29,11 @@ PARENT = Path(__file__).resolve().parent
 
 def extractor(pdf: str):
     """
-    > If the file size is greater than 10 MB, exit the program with an error message. Otherwise, open
+    If the file size is greater than 10 MB, exit the program with an error message. Otherwise, open
     the PDF file and extract the text from each page.
 
     :param pdf: The PDF file to be read
-    :return: A list of strings.
+    :return: Extracted text from pdf file.
     """
     size = os.path.getsize(pdf)
     large = round(size / (1024 * 1024))
@@ -47,11 +46,15 @@ def extractor(pdf: str):
 
 def write_file(results: str, opt: str, report: Optional[str]) -> None:
     """
-    If the report is not empty, then write the results to a file.
+    If a report is provided, open a file with the name of the report, write the results to the file, and
+    close the file.
 
-    :param results: the text that will be written to the file
+    :param results: The text that will be written to the file
+    :type results: str
     :param opt: 'w' for write, 'a' for append
-    :param report: the path to the PDF file
+    :type opt: str
+    :param report: The path to the PDF file you want to extract text from
+    :type report: Optional[str]
     """
     if report:
         file_output = PARENT.joinpath(f"{os.path.basename(report).replace(' ', '_').replace('.pdf', '')}.txt")
@@ -123,52 +126,6 @@ class PDFWorker:
             print(f"{TC.YELLOW}= No IOCs found ={TC.RESET}")
             if output:
                 write_file(report=title, results="= No IOCs found =", opt="w")
-
-    # def get_patterns(self, output: bool, title: str, pdfdoc: str, text: str) -> None:
-    #     """Create output file"""
-    #     lang_results = ""
-    #     patts_results = ""
-
-    #     if output:
-    #         write_file(report=title, results=f"\nTITLE: {title} \nPATH: {pdfdoc}\n", opt="w")
-
-    #     # Language detection
-    #     detected_language = HELPER.detect_language(text)
-    #     languages = ["ARABIC", "CYRILLIC", "CHINESE", "FARSI", "HEBREW"]
-    #     for language in languages:
-    #         if detected_language.get(language):
-    #             self.counter += 1
-    #             if spec := "".join(detected_language[language]):
-    #                 lang_results += f"\n{language}\n{'-' * 15}\n{spec}\n"
-
-    #     # Detect patterns
-    #     exclude = ("gov", "foo", "bar", "py")
-    #     for key, pattern in HELPER.patts(text).items():
-    #         if pattern:
-    #             self.counter += 1
-    #             sorted_patterns = sorted(set(pattern))
-
-    #             if key == "DOMAIN":
-    #                 for domain in pattern:
-    #                     tld = domain.split(".")[-1]
-    #                     with contextlib.suppress(ValueError):
-    #                         while not is_tld(tld) or tld in exclude:
-    #                             sorted_patterns.remove(domain)
-    #             pattern = "\n".join(sorted_patterns)
-    #         if pattern:
-    #             patts_results += f"\n{key}\n{'-' * 15}\n{pattern}\n"
-
-    #     if lang_results or patts_results:
-    #         if lang_results:
-    #             print(f"\n{TC.FOUND}LANGUAGES{TC.RESET}\n{lang_results}")
-    #         if patts_results:
-    #             print(f"\n{TC.FOUND}PATTERNS{TC.RESET}\n{patts_results}")
-    #         if output:
-    #             write_file(report=title, results=lang_results + patts_results, opt="a")
-    #     else:
-    #         print(f"{TC.YELLOW}= No IOCs found ={TC.RESET}")
-    #         if output:
-    #             write_file(report=title, results="= No IOCs found =", opt="w")
 
 
 def main():
