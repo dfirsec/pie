@@ -1,3 +1,4 @@
+"""Utility class"""
 import re
 
 from colorama import Fore, Style, init
@@ -16,6 +17,13 @@ class Helpers:
                 "chinese": re.compile(r"[\u4E00-\u9FFF]"),
                 "cyrillic": re.compile(r"[\u0400-\u04FF]"),
                 "hebrew": re.compile(r"[\u0590-\u05FF\uFB2A-\uFB4E]"),
+                "han-unification": re.compile(
+                    r"^[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u20000-\\u2A6DF\\u2A700-\\u2B73F\\u2B740-\\u2B81F\\u2B820-\\"
+                    r"u2CEAF\\u2CEB0-\\u2EBEF\\u30000-\\u3134F\\uF900-\\uFAFF\\u2E80-\\u2EFF\\u31C0-\\u31EF\\u3000-\\"
+                    r"u303F\\u2FF0-\\u2FFF\\u3300-\\u33FF\\uFE30-\\uFE4F\\uF900-\\uFAFF\\u2F800-\\u2FA1F\\u3200-\\"
+                    r"u32FF\\u1F200-\\u1F2FF\\u2F00-\\u2FDF]+$"
+                ),
+                "devanagari": re.compile(r"[\u0900-\u0954]"),
             },
             "hashes": {
                 "md5": re.compile(r"\b[A-Fa-f0-9]{32}\b"),
@@ -23,27 +31,22 @@ class Helpers:
                 "sha256": re.compile(r"\b[A-Fa-f0-9]{64}\b"),
                 "sha512": re.compile(r"\b[A-Fa-f0-9]{128}\b"),
             },
+            "net-related": {
+                "ipv4": re.compile(
+                    r"(((?![0])(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\[\.\]|\.))){3}(25[0-5]|"
+                    r"2[0-4][0-9]|[01]?[0-9][0-9]?)"
+                ),
+                "mac": re.compile(r"^[a-fA-F0-9]2(:[a-fA-F0-9]2)5$"),
+            },
             "web-related": {
                 "domain": re.compile(
                     r"([A-Za-z0-9]+(?:[\-|\.|][A-Za-z0-9]+)*(?:\[\.\]|\.)(?![a-z-]*.[i\.e]$"
                     r"|[e\.g]$)(?:[a-z]"
                     r"{2,4})\b|(?:\[\.\][a-z]{2,4})(?!@)$)"
                 ),
-                # "domain": re.compile(
-                #     r"([A-Za-z0-9]+(?:[\-|\.|][A-Za-z0-9]+)*(?<!fireeye)(?:\[\.\]|\.)(?!["
-                #     r"a-z-]*.\.add|ako|also|area|argv|asn|asp|bar|bat|bak|bin|bmp|btz|cfg|cfm|class|cpj|conf|copy|dat"
-                #     r"|db|dll|dis|dns|doc|div|drv|dx|err|exe|file|foo|get|gif|gov|gz|hta|htm|http|img|inf|ini|jar"
-                #     r"|java|jsp|jpg|key|lnk|log|md|min|msi|mtx|mul|nat|name|rar|rer|rpm|out|pack|pcap|pdf|php|pop"
-                #     r"|png|ps|put|py|src|sh|sort|subj|sys|tmp|txt|user|vbe|vbs|xls|xml|xpm|zip"
-                #     r"|[i\.e]$|[e\.g]$)(?:[a-z]{2,4})\b|(?:\[\.\][a-z]{2,4})(?!@)$)"
-                # ),
                 "email": re.compile(
                     r"([a-zA-Z0-9_.+-]+(\[@\]|@)(?!fireeye)[a-zA-Z0-9-.]+(\.|\[\.\])(?![a-z-]+\.gov|gov)"
                     r"([a-zA-Z0-9-.]{2,6}\b))"
-                ),
-                "ipv4": re.compile(
-                    r"(((?![0])(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\[\.\]|\.))){3}(25[0-5]|"
-                    r"2[0-4][0-9]|[01]?[0-9][0-9]?)"
                 ),
                 "url": re.compile(
                     r"(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]"
@@ -79,6 +82,7 @@ class Helpers:
                 "base64": re.compile(
                     r"(^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$)"
                 ),
+                "latlon": re.compile(r"^((\-?|\+?)?\d+(\.\d+)?),\s*((\-?|\+?)?\d+(\.\d+)?)$"),
             },
             "pii": {
                 "address": re.compile(
@@ -122,6 +126,8 @@ class Helpers:
             "CHINESE": self.reiter(self.regex("languages", "chinese"), text),
             "CYRILLIC": self.reiter(self.regex("languages", "cyrillic"), text),
             "HEBREW": self.reiter(self.regex("languages", "hebrew"), text),
+            "HAN": self.reiter(self.regex("languages", "han-unification"), text),
+            "DEVANAGARI": self.reiter(self.regex("languages", "devanagari"), text),
         }
 
     def patts(self, text: str):  # sourcery skip: docstrings-for-functions
@@ -134,7 +140,8 @@ class Helpers:
             "ENVIRONMENT VARIABLE": self.reiter(self.regex("file-related", "env_var"), text),
             "MISC FILE": self.reiter(self.regex("file-related", "misc_file"), text),
             "IMAGE": self.reiter(self.regex("file-related", "image"), text),
-            "IPV4": self.reiter(self.regex("web-related", "ipv4"), text),
+            "IPV4": self.reiter(self.regex("net-related", "ipv4"), text),
+            "MAC": self.reiter(self.regex("net-related", "mac"), text),
             "MD5": self.reiter(self.regex("hashes", "md5"), text),
             "OFFICE/PDF": self.reiter(self.regex("file-related", "office"), text),
             "PHONE": self.reiter(self.regex("pii", "phone"), text),
