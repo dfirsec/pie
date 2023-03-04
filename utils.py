@@ -158,6 +158,8 @@ class Termcolors:
     """
     Color constants used to colorize text in the terminal.
     """
+    def __init__(self) -> None:
+        pass
 
     # Initialize colorama
     init()

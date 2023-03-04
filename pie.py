@@ -90,30 +90,10 @@ class PDFWorker:
             write_file(report=title, results=f"\nTITLE: {title} \nPATH: {pdfdoc}\n", opt="w")
 
         # language detection
-        detected_language = HELPER.detect_language(text)
-        languages = ["ARABIC", "CYRILLIC", "CHINESE", "FARSI", "HEBREW"]
-        for language in languages:
-            if detected_language.get(language):
-                if spec := "".join(detected_language[language]):
-                    self.counter += 1
-                    print(f"\n{TC.FOUND}{TC.BOLD}{language}{TC.RESET}\n{TC.SEP}\n{spec}")
-                    if output:
-                        write_file(report=title, results=f"\n{language}\n{'-' * 15}\n{spec}", opt="a")
-
-        # excluded tlds
-        exclude = ("gov", "foo")
+        self.detect_language(output, title, text)
 
         # check if the tlds file is present and up to date
         self.download_tlds()
-
-        # create a set of valid tlds
-        valid_tlds = set()
-        tlds_file = "tlds-alpha-by-domain.txt"
-        with open(tlds_file, encoding="utf-8") as fileobj:
-            for line in fileobj:
-                tld = line.strip().lower()
-                if tld and not tld.startswith("#"):
-                    valid_tlds.add(tld)
 
         # get all patterns
         for key, pvals in HELPER.patts(text).items():
@@ -125,9 +105,10 @@ class PDFWorker:
                 # check if domain tld is in the valid tlds
                 if key == "DOMAIN":
                     new_patterns = set()
+                    exclude = ("gov", "foo")  # excluded tlds
                     for domain in sorted_patterns:
                         tld = domain.split(".")[-1].lower()
-                        if tld in valid_tlds and tld not in exclude:
+                        if tld in self.valid_tlds() and tld not in exclude:
                             new_patterns.add(domain)
                         sorted_patterns = new_patterns
 
@@ -141,6 +122,40 @@ class PDFWorker:
             print(f"{TC.YELLOW}= No IOCs found ={TC.RESET}")
             if output:
                 write_file(report=title, results="= No IOCs found =", opt="w")
+
+    def valid_tlds(self):
+        """
+        Create a set of valid tlds
+        """
+        valid_tlds = set()
+        tlds_file = "tlds-alpha-by-domain.txt"
+        with open(tlds_file, encoding="utf-8") as fileobj:
+            for line in fileobj:
+                tld = line.strip().lower()
+                if tld and not tld.startswith("#"):
+                    valid_tlds.add(tld)
+        return valid_tlds
+
+    def detect_language(self, output: bool, title: str, text: str):
+        """
+        Detects the language of the text.
+
+        :param output: bool
+        :type output: bool
+        :param title: The title of the report
+        :type title: str
+        :param text: The text to be analyzed
+        :type text: str
+        """
+        detected_language = HELPER.detect_language(text)
+        languages = ["ARABIC", "CYRILLIC", "CHINESE", "FARSI", "HEBREW"]
+        for language in languages:
+            if detected_language.get(language):
+                if spec := "".join(detected_language[language]):
+                    self.counter += 1
+                    print(f"\n{TC.FOUND}{TC.BOLD}{language}{TC.RESET}\n{TC.SEP}\n{spec}")
+                    if output:
+                        write_file(report=title, results=f"\n{language}\n{'-' * 15}\n{spec}", opt="a")
 
     def download_tlds(self, age_limit_days: int = 3):
         """
