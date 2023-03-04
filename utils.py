@@ -10,7 +10,9 @@ class Helpers:
     def __init__(self):
         pass
 
-    def regex(self, category: str, pattern_name: str):  # sourcery skip: docstrings-for-functions
+    def regex(self, category: str, pattern_name: str):
+        """Regex function"""
+
         patterns = {
             "languages": {
                 "arabic": re.compile(r"[\u0600-\u06FF\u0698\u067E\u0686\u06AF]"),
@@ -82,7 +84,7 @@ class Helpers:
                 "base64": re.compile(
                     r"(^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$)"
                 ),
-                "latlon": re.compile(r"^((\-?|\+?)?\d+(\.\d+)?),\s*((\-?|\+?)?\d+(\.\d+)?)$"),
+                "geolocation": re.compile(r"^((\-?|\+?)?\d+(\.\d+)?),\s*((\-?|\+?)?\d+(\.\d+)?)$"),
             },
             "pii": {
                 "address": re.compile(
@@ -117,10 +119,26 @@ class Helpers:
         }
         return patterns[category][pattern_name]
 
-    def reiter(self, regex: re.Pattern[str], text: str):  # sourcery skip: docstrings-for-functions
+    def reiter(self, regex: re.Pattern[str], text: str):
+        """
+        Returns an iterator over all the matches of a regex in a string
+
+        :param regex: The regular expression to use
+        :type regex: re.Pattern[str]
+        :param text: The text to be searched
+        :type text: str
+        :return: A generator object.
+        """
         return (x.group() for x in re.finditer(regex, text.lower()))
 
-    def detect_language(self, text: str):  # sourcery skip: docstrings-for-functions
+    def detect_language(self, text: str):
+        """
+        Returns language.
+
+        :param text: The text to be searched
+        :type text: str
+        :return: regex match by language.
+        """
         return {
             "ARABIC": self.reiter(self.regex("languages", "arabic"), text),
             "CHINESE": self.reiter(self.regex("languages", "chinese"), text),
@@ -130,17 +148,25 @@ class Helpers:
             "DEVANAGARI": self.reiter(self.regex("languages", "devanagari"), text),
         }
 
-    def patts(self, text: str):  # sourcery skip: docstrings-for-functions
+    def patts(self, text: str):
+        """
+        Returns content type found.
+
+        :param text: The text to be searched
+        :type text: str
+        :return: regex match by type.
+        """
         return {
-            "ARCHIVE": self.reiter(self.regex("hashes", "md5"), text),
-            "BINARY": self.reiter(self.regex("hashes", "sha1"), text),
-            "BTC": self.reiter(self.regex("hashes", "sha256"), text),
+            "ARCHIVE": self.reiter(self.regex("file-related", "archive"), text),
+            "BINARY": self.reiter(self.regex("file-related", "binary"), text),
+            "BTC": self.reiter(self.regex("misc", "btc"), text),
             "DOMAIN": self.reiter(self.regex("web-related", "domain"), text),
             "EMAIL": self.reiter(self.regex("web-related", "email"), text),
             "ENVIRONMENT VARIABLE": self.reiter(self.regex("file-related", "env_var"), text),
             "MISC FILE": self.reiter(self.regex("file-related", "misc_file"), text),
             "IMAGE": self.reiter(self.regex("file-related", "image"), text),
             "IPV4": self.reiter(self.regex("net-related", "ipv4"), text),
+            "GEOLOCATION": self.reiter(self.regex("misc", "geolocation"), text),
             "MAC": self.reiter(self.regex("net-related", "mac"), text),
             "MD5": self.reiter(self.regex("hashes", "md5"), text),
             "OFFICE/PDF": self.reiter(self.regex("file-related", "office"), text),
@@ -158,6 +184,7 @@ class Termcolors:
     """
     Color constants used to colorize text in the terminal.
     """
+
     def __init__(self) -> None:
         pass
 

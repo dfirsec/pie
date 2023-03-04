@@ -105,7 +105,7 @@ class PDFWorker:
                 # check if domain tld is in the valid tlds
                 if key == "DOMAIN":
                     new_patterns = set()
-                    exclude = ("gov", "foo")  # excluded tlds
+                    exclude = ("gov", "foo", "py", "zip")  # add excluded tlds here
                     for domain in sorted_patterns:
                         tld = domain.split(".")[-1].lower()
                         if tld in self.valid_tlds() and tld not in exclude:
