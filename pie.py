@@ -1,40 +1,42 @@
-"""
-Extracts IOCs from PDF File.
-"""
+"""Extract Indicators of Compromise (IOCs) from PDF documents."""
+
 import argparse
 import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Set
 
 import pdfplumber
 import requests
-from utils import Helpers, Termcolors
 
-__author__ = "DFIRSec (@pulsecode)"
-__version__ = "v0.1.0"
-__description__ = "Extract Indicators of Compromise (IOCs) from PDF documents."
+from utils.helpers import Helpers
+from utils.termcolors import (BOLD, CYAN, DOTSEP, FOUND, GREEN, RED, RESET,
+                              SEP, YELLOW)
 
-HELPER = Helpers()
-TC = Termcolors()
+helper = Helpers()
 
 # Base directory
-PARENT = Path(__file__).resolve().parent
+root = Path(__file__).resolve().parent
 
 
-def extractor(pdf: str):
+def extractor(pdf: str) -> list:
     """
-    If the file size is greater than 10 MB, exit the program with an error message. Otherwise, open
-    the PDF file and extract the text from each page.
+    Open the PDF file and extract the text from each page.
 
-    :param pdf: The PDF file to be read
-    :return: Extracted text from pdf file.
+    If the file size is greater than 10 MB, exit the program with an error message.
+
+    Args:
+        pdf (str): The PDF file to be read
+
+    Returns:
+        list: A list of text from each page of the PDF file.
     """
     size = os.path.getsize(pdf)
     large = round(size / (1024 * 1024))
-    if size > 10240000:
-        sys.exit(f"{TC.RED}[ERROR]{TC.RESET} Limit file size to 10 MB or less. Your file is {large:,} MB.")
+    file_size_limit = 10240000
+    if size > file_size_limit:
+        sys.exit(f"{RED}[ERROR]{RESET} Limit file size to 10 MB or less. Your file is {large:,} MB.")
     else:
         with pdfplumber.open(pdf) as pdf_file:
             return [page.extract_text() for page in pdf_file.pages if page is not None]
@@ -42,37 +44,39 @@ def extractor(pdf: str):
 
 def write_file(results: str, opt: str, report: Optional[str]) -> None:
     """
-    If a report is provided, open a file with the name of the report, write the results to the file, and
-    close the file.
+    Write the results to the file, and close the file.
 
-    :param results: The text that will be written to the file
-    :type results: str
-    :param opt: 'w' for write, 'a' for append
-    :type opt: str
-    :param report: The path to the PDF file you want to extract text from
-    :type report: Optional[str]
+    Args:
+        results (str): The text that will be written to the file.
+        opt (str): 'w' for write, 'a' for append.
+        report (Optional[str]): The path to the PDF file you want to extract text from.
     """
     if report:
-        file_output = PARENT.joinpath(f"{os.path.basename(report).replace(' ', '_').replace('.pdf', '')}.txt")
+        file_output = root.joinpath(f"{os.path.basename(report).replace(' ', '_').replace('.pdf', '')}.txt")
         with open(file_output, opt, encoding="utf-8") as out:
             out.write(results)
 
 
-class PDFWorker:
+class PDFWorker(object):
     """Processes PDF file."""
 
     def __init__(self):
+        """Initialize the PDFWorker class."""
         self.counter = 0
 
     def processor(self, pdfdoc: str, output: bool, title: str) -> None:
         """
         It takes a PDF document, extracts the text, and writes it to a file.
 
-        :param pdf_doc: The PDF document to be processed
-        :param output: The output directory
-        :param title: The title of the PDF document
+        Args:
+            pdfdoc (str): The PDF document to be processed
+            output (bool): The output directory
+            title (str): The title of the PDF document
+
+        Raises:
+            TypeError: If the PDF document is not a string.
         """
-        print(f"{TC.GREEN}\n[ Gathering IOCs ]{TC.RESET}\n{TC.DOTSEP}")
+        print(f"{GREEN}\n[ Gathering IOCs ]{RESET}\n{DOTSEP}")
 
         pages = list(extractor(pdf=pdfdoc))
         try:
@@ -83,49 +87,90 @@ class PDFWorker:
 
         self.get_patterns(output, title, pdfdoc, text)
 
+    def process_domains(self, sorted_patterns: Set[str]) -> Set[str]:
+        """
+        Filters a set of domain patterns based on their top-level domain.
+
+        Args:
+            sorted_patterns (Set[str]): Domain names, sorted in alphabetical order.
+
+        Returns:
+            A set of domain names that have valid top-level domains (TLDs) and are not
+            in the excluded list of TLDs.
+        """
+        new_patterns = set()
+        exclude = ("gov", "foo", "py", "zip")  # add excluded tlds here
+        for domain in sorted_patterns:
+            tld = domain.split(".")[-1].lower()
+            if tld in self.valid_tlds and tld not in exclude:
+                new_patterns.add(domain)
+        return new_patterns
+
+    def print_and_write_patterns(self, key: str, patterns: Set[str], output: bool, title: str) -> None:
+        """
+        Prints and writes the patterns to a file if output is True.
+
+        Args:
+            key (str): The key or identifier for the patterns.
+            patterns (Set[str]): A set of strings representing patterns that have been found.
+            output (bool): Whether the results should be written to a file or not.
+            title (str): The title of the report that will be written to a file.
+        """
+        pattern = "\n".join(patterns)
+        if pattern:
+            print(f"\n{FOUND}{BOLD}{key}{RESET}\n{SEP}\n{pattern}")
+            if output:
+                write_file(report=title, results=f"\n{key}\n{'-' * 15}\n{pattern}\n", opt="a")
+
     def get_patterns(self, output: bool, title: str, pdfdoc: str, text: str) -> None:
-        # sourcery skip: low-code-quality
-        """Create output file"""
+        """
+        Searches for patterns in a given text and outputs the results to a file or console.
+
+        Args:
+            output (bool): A boolean value indicating whether to output the results to a file or not
+            title (str): A string representing the title of the PDF document being analyzed
+            pdfdoc (str): The path or location of the PDF document being analyzed
+            text (str): The text to be analyzed for patterns and IOCs (indicators of compromise)
+        """
+        # header for the report
         if output:
             write_file(report=title, results=f"\nTITLE: {title} \nPATH: {pdfdoc}\n", opt="w")
 
-        # language detection
+        # detect language patterns in text.
         self.detect_language(output, title, text)
 
-        # check if the tlds file is present and up to date
+        # check for the tlds file and download if needed.
         self.download_tlds()
 
-        # get all patterns
-        for key, pvals in HELPER.patts(text).items():
+        # get the patterns from the text.
+        for key, pvals in helper.patts(text).items():
             if pvals:
                 sorted_patterns = sorted(set(pvals))
                 if sorted_patterns:
                     self.counter += 1
 
-                # check if domain tld is in the valid tlds
                 if key == "DOMAIN":
-                    new_patterns = set()
-                    exclude = ("gov", "foo", "py", "zip")  # add excluded tlds here
-                    for domain in sorted_patterns:
-                        tld = domain.split(".")[-1].lower()
-                        if tld in self.valid_tlds() and tld not in exclude:
-                            new_patterns.add(domain)
-                        sorted_patterns = new_patterns
+                    sorted_patterns = self.process_domains(set(sorted_patterns))
 
-                # return the sorted patterns
-                if pattern := "\n".join(sorted_patterns):
-                    print(f"\n{TC.FOUND}{TC.BOLD}{key}{TC.RESET}\n{TC.SEP}\n{pattern}")
-                    if output:
-                        write_file(report=title, results=f"\n{key}\n{'-' * 15}\n{pattern}\n", opt="a")
+                if sorted_patterns:
+                    self.counter += 1
+                elif key == "DOMAIN":
+                    self.counter -= 1
 
-        if self.counter == 0:
-            print(f"{TC.YELLOW}= No IOCs found ={TC.RESET}")
+                self.print_and_write_patterns(key, set(sorted_patterns), output, title)
+
+        if self.counter <= 0:
+            print(f"{YELLOW}= No IOCs found ={RESET}")
             if output:
                 write_file(report=title, results="= No IOCs found =", opt="w")
 
-    def valid_tlds(self):
+    @property
+    def valid_tlds(self) -> set[str]:
         """
-        Create a set of valid tlds
+        Getter method for the valid_tlds class property.
+
+        Returns:
+            set: A set of valid top-level domains (TLDs).
         """
         valid_tlds = set()
         tlds_file = "tlds-alpha-by-domain.txt"
@@ -136,36 +181,36 @@ class PDFWorker:
                     valid_tlds.add(tld)
         return valid_tlds
 
-    def detect_language(self, output: bool, title: str, text: str):
+    def detect_language(self, output: bool, title: str, text: str) -> None:
         """
         Detects the language of the text.
 
-        :param output: bool
-        :type output: bool
-        :param title: The title of the report
-        :type title: str
-        :param text: The text to be analyzed
-        :type text: str
+        Args:
+            output (bool): boolean value indicating whether to output the results to a file or not.
+            title (str): The title of the report.
+            text (str): The text to be analyzed for langauges.
         """
-        detected_language = HELPER.detect_language(text)
+        detected_language = helper.detect_language(text)
         languages = ["ARABIC", "CYRILLIC", "CHINESE", "FARSI", "HEBREW"]
         for language in languages:
             if detected_language.get(language):
-                if spec := "".join(detected_language[language]):
+                spec = "".join(detected_language[language])
+                if spec:
                     self.counter += 1
-                    print(f"\n{TC.FOUND}{TC.BOLD}{language}{TC.RESET}\n{TC.SEP}\n{spec}")
+                    print(f"\n{FOUND}{BOLD}{language}{RESET}\n{SEP}\n{spec}")
                     if output:
                         write_file(report=title, results=f"\n{language}\n{'-' * 15}\n{spec}", opt="a")
 
-    def download_tlds(self, age_limit_days: int = 3):
+    def download_tlds(self, age_limit_days: int = 3) -> Optional[str]:
         """
-        Downloads TLDS file, saves it to a file, and returns the path to the file
+        Downloads TLDS file, saves it to a file, and returns the path to the file.
 
-        :param url: The URL of the file to download
-        :param filename: The name of the file to download
-        :param age_limit_days: The number of days that the file can be old before it is updated, defaults to
-        3 (optional)
-        :return: The file path of the downloaded file.
+        Args:
+            age_limit_days (int, optional, default=3): The number of days that the file can
+                be old before it is updated.  Defaults to 3 days.
+
+        Returns:
+            The path to the downloaded file.
         """
         url = "https://data.iana.org/TLD/tlds-alpha-by-domain.txt"
         filename = "tlds-alpha-by-domain.txt"
@@ -189,19 +234,19 @@ class PDFWorker:
             if delta > age_limit:
                 print(f"TLDS file is older than {age_limit_days} days, updating...")
                 try:
-                    with open(filepath, "wb") as fileobj:
-                        fileobj.write(response.content)
-                except Exception as err:
-                    print(f"Error updating file: {err}")
+                    with open(filepath, "wb") as tlds_update:
+                        tlds_update.write(response.content)
+                except Exception as file_err:
+                    print(f"Error updating file: {file_err}")
                     return None
 
         else:
             print("[!] The TLDS file is missing, downloading file...\n")
             try:
-                with open(filepath, "wb") as fileobj:
-                    fileobj.write(response.content)
-            except Exception as err:
-                print(f"Error downloading file: {err}")
+                with open(filepath, "wb") as tlds_file:
+                    tlds_file.write(response.content)
+            except Exception as download_err:
+                print(f"Error downloading file: {download_err}")
                 return None
 
             print(f"[+] The file {filename} has been downloaded and saved.")
@@ -209,9 +254,11 @@ class PDFWorker:
         return str(filepath.resolve())
 
 
-def main():
-    """
-    Main program
+def main() -> None:
+    """Main function that takes in command line arguments for a PDF document and extracts IOCs.
+
+    Raises:
+        SystemExit: If the file does not exist.
     """
     parser = argparse.ArgumentParser(description="PDF IOC Extractor")
     parser.add_argument(dest="pdf_doc", help="Path to single PDF document")
@@ -219,7 +266,7 @@ def main():
     args = parser.parse_args()
 
     if not Path(args.pdf_doc).exists():
-        raise SystemExit(f"{TC.RED}[ERROR]{TC.RESET} No such file: {args.pdf_doc}")
+        raise SystemExit(f"{RED}[ERROR]{RESET} No such file: {args.pdf_doc}")
 
     title = os.path.basename(args.pdf_doc)
     worker = PDFWorker()
@@ -236,6 +283,6 @@ if __name__ == "__main__":
 
     PDF IOC Extractor
     """
-    print(f"{TC.CYAN}{BANNER}{TC.RESET}")
+    print(f"{CYAN}{BANNER}{RESET}")
 
     main()
