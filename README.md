@@ -14,12 +14,7 @@ pip install -r requirements.txt
 
 ## Dependencies
 
-- argparse
-- os
-- sys
-- datetime
-- pathlib
-- typing
+- colorama
 - pdfplumber
 - requests
 
