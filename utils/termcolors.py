@@ -14,4 +14,4 @@ YELLOW = Fore.LIGHTYELLOW_EX
 RESET = Style.RESET_ALL
 SEP = f"{GRAY}--------------{RESET}"
 DOTSEP = f"{GRAY}{'.' * 20}{RESET}"
-FOUND = f"{CYAN}\u2BA9 {RESET}"
+FOUND = f"{CYAN}\u2BA9 {RESET}" # curved downwards and rightwards arrow `⮩`
