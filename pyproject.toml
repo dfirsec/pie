@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pie"
-version = "0.0.9"
+version = "0.1.0"
 description = "Extracts text from PDF and searches for IOCs"
 authors = ["Mitch Haddadi <12067255+dfirsec@users.noreply.github.com>"]
 license = "MIT"
