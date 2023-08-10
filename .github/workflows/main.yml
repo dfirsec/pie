@@ -1,8 +1,11 @@
 name: GitHub Action
 run-name: ${{ github.actor }}
-on: [push]
+on: 
+    push:
+        branches:
+            - master
 jobs:
-  Explore-GitHub-Actions:
+  Run-TruffleHog-OSS:
     runs-on: ubuntu-latest
     steps:
       - name: TruffleHog OSS
