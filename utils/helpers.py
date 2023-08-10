@@ -23,7 +23,7 @@ class Helpers:
                 "chinese": re.compile(r"[\u4E00-\u9FFF]"),
                 "kanji": re.compile(r"[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]"),
                 "han-unification": re.compile(
-                    r"^[\u4E00-\u9FFF\u3400-\u4DBF\u20000-\u2A6DF\u2A700-\u2B73F\u2B740-\u2B81F\u2B820-\u2CEAF\u2CEB0-\u2EBEF\u30000-\u3134F\uF900-\uFAFF\u2E80-\u2EFF\u31C0-\u31EF\u3000-\u303F\u2FF0-\u2FFF\u3300-\u33FF\uFE30-\uFE4F\uF900-\uFAFF\u2F800-\u2FA1F\u3200-\u32FF\u1F200-\u1F2FF\u2F00-\u2FDF]+$"
+                    r"^[\u4E00-\u9FFF\u3400-\u4DBF\u20000-\u2A6DF\u2A700-\u2B73F\u2B740-\u2B81F\u2B820-\u2CEAF\u2CEB0-\u2EBEF\u30000-\u3134F\uF900-\uFAFF\u2E80-\u2EFF\u31C0-\u31EF\u3000-\u303F\u2FF0-\u2FFF\u3300-\u33FF\uFE30-\uFE4F\uF900-\uFAFF\u2F800-\u2FA1F\u3200-\u32FF\u1F200-\u1F2FF\u2F00-\u2FDF]+$",
                 ),
                 "farsi": re.compile(r"[\u0600-\u06FF\u0698\u067E\u0686\u06AF]"),
                 "cyrillic": re.compile(r"[\u0400-\u04FF]"),
@@ -78,9 +78,7 @@ class Helpers:
                 "script": re.compile(
                     r"(([^\s|(\"])+[a-z-A-Z0-9\-\_]+((?:\.vbs)|(?:\.sh)|(?:\.bat)|(?:\.ps1)|(?:\.py)))",
                 ),
-                "windir": re.compile(
-                    r"([a-zA-Z]{1}:(\\|\\\\|\/\/)(?<![a-zA-Z]:\/\/)[a-zA-Z0-9\-\_\\\/].+([^\s|\"]+)[^\.\"\r\n])",
-                ),
+                "windir": re.compile(r"\b[a-zA-Z]{1}:\\?\\(?:\w+\\?).+$"),
             },
             "misc": {
                 "btc": re.compile(r"(^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$)"),
@@ -94,18 +92,9 @@ class Helpers:
                     r"(^(\d+)\s?([A-Za-z](?=\s))?\s(.*?)\s([^ ]+?)\s?((?<=\s)APT)?\s?((?<=\s)\d*)?$)",
                 ),
                 "cc": re.compile(
-                    r"(^4[0-9]{12}(?:[0-9]{3})?$)|(^(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}"
-                    r"|27[01][0-9]|2720)[0-9]{12}$)|(3[47][0-9]{13})|(^3(?:0[0-5]|[68][0-9])[0-9]{11}$)"
-                    r"|(^6(?:011|5[0-9]{2})[0-9]{12}$)|(^(?:2131|1800|35\d{3})\d{11}$)",
-                    re.MULTILINE,
-                ),
-                "date": re.compile(
-                    r"(?:(?<!\:)(?<!\:\d)[0-3]?\d(?:st|nd|rd|th)?\s+(?:of\s+)?("
-                    r"?:jan\.?|january|feb\.?|february|mar\.?|march|apr\.?|april|may|jun\.?|june|jul\.?|july|aug"
-                    r"\.?|august|sep\.?|september|oct\.?|october|nov\.?|november|dec\.?|december)|("
-                    r"?:jan\.?|january|feb\.?|february|mar\.?|march|apr\.?|april|may|jun\.?|june|jul\.?|july|aug"
-                    r"\.?|august|sep\.?|september|oct\.?|october|nov\.?|november|dec\.?|december)\s+(?<!\:)(?<!\:\d)["
-                    r"0-3]?\d(?:st|nd|rd|th)?)(?:\,)?\s*(?:\d{4})?|[0-3]?\d[-\./][0-3]?\d[-\./]\d{2,4}",
+                    r"^(?:4[0-9]{12}(?:[0-9]{3})?|(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}"
+                    r"|27[01][0-9]|2720)[0-9]{12}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}"
+                    r"|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$",
                 ),
                 "phone": re.compile(
                     r"(^(?:(?<![\d-])(?:\+?\d{1,3}[-.\s*]?)?(?:\(?\d{3}\)?[-.\s*]?)?\d{3}[-.\s*]"

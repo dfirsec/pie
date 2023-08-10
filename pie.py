@@ -4,13 +4,23 @@
 import argparse
 import os
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 from pathlib import Path
 
 import pdfplumber
 import requests
 from utils.helpers import Helpers
-from utils.termcolors import BOLD, CYAN, DOTSEP, FOUND, GREEN, RED, RESET, SEP, YELLOW
+from utils.termcolors import BOLD
+from utils.termcolors import CYAN
+from utils.termcolors import DOTSEP
+from utils.termcolors import FOUND
+from utils.termcolors import GREEN
+from utils.termcolors import RED
+from utils.termcolors import RESET
+from utils.termcolors import SEP
+from utils.termcolors import YELLOW
 
 helper = Helpers()
 
