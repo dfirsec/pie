@@ -1,2 +1,9 @@
-- name: TruffleHog OSS
-  uses: trufflesecurity/trufflehog@v3.47.0
+name: GitHub Action
+run-name: ${{ github.actor }}
+on: [push]
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@v3.47.0
