@@ -2,7 +2,6 @@
 
 
 import argparse
-import os
 import sys
 from datetime import datetime
 from datetime import timedelta
@@ -47,7 +46,7 @@ class PDFWorker:
         Returns:
             list: A list of text from each page of the PDF file.
         """
-        size = os.path.getsize(pdf)
+        size = Path.stat(pdf).st_size
         large = round(size / (1024 * 1024))
         file_size_limit = 10240000
         if size > file_size_limit:
