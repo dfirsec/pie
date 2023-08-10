@@ -6,7 +6,7 @@ on:
             - master
 jobs:
   Run-TruffleHog-OSS:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: TruffleHog OSS
         uses: trufflesecurity/trufflehog@v3.47.0
