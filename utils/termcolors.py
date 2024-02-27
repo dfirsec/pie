@@ -1,6 +1,8 @@
 """Color constants used to colorize text in the terminal."""
 
-from colorama import Fore, Style, init
+from colorama import Fore
+from colorama import Style
+from colorama import init
 
 # Initialize colorama
 init()

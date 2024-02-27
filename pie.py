@@ -3,9 +3,9 @@
 
 import argparse
 import sys
+from datetime import UTC
 from datetime import datetime
 from datetime import timedelta
-from datetime import timezone
 from pathlib import Path
 
 import pdfplumber
@@ -30,7 +30,7 @@ root = Path(__file__).resolve().parent
 class PDFWorker:
     """Processes PDF file."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize match counter and TLDs filename."""
         self.counter = 0
         self.tlds_filename = "tlds-alpha-by-domain.txt"
@@ -188,9 +188,9 @@ class PDFWorker:
             None
         """
         mtime = filepath.stat().st_mtime
-        mtime_datetime = datetime.fromtimestamp(mtime, tz=timezone.utc)
+        mtime_datetime = datetime.fromtimestamp(mtime, tz=UTC)
 
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         delta = now - mtime_datetime
         age_limit = timedelta(days=age_limit_days)  # default is 3 days
 
