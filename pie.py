@@ -65,7 +65,7 @@ class PDFWorker:
         """
         if report:
             file_output = root.joinpath(f"{Path(report).name.replace(' ', '_').replace('.pdf', '')}.txt")
-            with open(file_output, opt, encoding="utf-8") as out:
+            with Path(file_output, opt, encoding="utf-8").open("r") as out:
                 out.write(results)
 
     def processor(self, pdfdoc: str, output: bool, title: str) -> None:
@@ -146,11 +146,9 @@ class PDFWorker:
         languages = {"ARABIC", "CYRILLIC", "KANJI", "CHINESE", "FARSI", "HEBREW"}
         results = ""
         for language in languages:
-            if detected_language.get(language):
-                spec = "".join(detected_language[language])
-                if spec:
-                    self.counter += 1
-                    results += f"\n\n{FOUND}{BOLD}{language}{RESET}\n{SEP}\n{spec}"
+            if detected_language.get(language) and (spec := "".join(detected_language[language])):
+                self.counter += 1
+                results += f"\n\n{FOUND}{BOLD}{language}{RESET}\n{SEP}\n{spec}"
 
         if output and results:
             self.write_file(report=title, results=results, opt="a")
@@ -217,7 +215,7 @@ class PDFWorker:
             print(f"Error downloading file: {err}")
             return None
 
-        with open(filepath, "wb") as fileobj:
+        with Path(filepath).open("wb") as fileobj:
             fileobj.write(response.content)
         return str(filepath.resolve())
 
@@ -229,7 +227,7 @@ class PDFWorker:
             set: A set of valid top-level domains (TLDs).
         """
         valid_tlds = set()
-        with open(self.tlds_filename, encoding="utf-8") as fileobj:
+        with Path(self.tlds_filename, encoding="utf-8").open("r") as fileobj:
             for line in fileobj:
                 tld = line.strip().lower()
                 if tld and not tld.startswith("#"):
@@ -266,8 +264,7 @@ class PDFWorker:
         Returns:
             None
         """
-        pattern = "\n".join(patterns)
-        if pattern:
+        if pattern := "\n".join(patterns):
             print(f"\n{FOUND}{BOLD}{key}{RESET}\n{SEP}\n{pattern}")
             if output:
                 self.write_file(report=title, results=f"\n{key}\n{'-' * 15}\n{pattern}\n", opt="a")
