@@ -10,7 +10,7 @@ readme = "README.md"
 python = "^3.11"
 pdfplumber = "^0.11.0"
 pdfminer-six = "^20231228"
-requests = "^2.31.0"
+requests = "^2.32.0"
 rich = "^13.7.0"
 
 
