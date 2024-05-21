@@ -445,13 +445,22 @@ files = [
 
 [[package]]
 name = "requests"
+<<<<<<< HEAD
 version = "2.32.1"
+=======
+version = "2.32.0"
+>>>>>>> 80613060081d62d3eab001796281fe9ee95cf14a
 description = "Python HTTP for Humans."
 optional = false
 python-versions = ">=3.8"
 files = [
+<<<<<<< HEAD
     {file = "requests-2.32.1-py3-none-any.whl", hash = "sha256:21ac9465cdf8c1650fe1ecde8a71669a93d4e6f147550483a2967d08396a56a5"},
     {file = "requests-2.32.1.tar.gz", hash = "sha256:eb97e87e64c79e64e5b8ac75cee9dd1f97f49e289b083ee6be96268930725685"},
+=======
+    {file = "requests-2.32.0-py3-none-any.whl", hash = "sha256:f2c3881dddb70d056c5bd7600a4fae312b2a300e39be6a118d30b90bd27262b5"},
+    {file = "requests-2.32.0.tar.gz", hash = "sha256:fa5490319474c82ef1d2c9bc459d3652e3ae4ef4c4ebdd18a21145a47ca4b6b8"},
+>>>>>>> 80613060081d62d3eab001796281fe9ee95cf14a
 ]
 
 [package.dependencies]
@@ -502,4 +511,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "0a66ff920a381f80f248b37cdc7c448d9d20b04704a7119489f228f33d54ee61"
+content-hash = "f10ecdf5569e9c2161739c88772f4e83a23f355718bb73ffce72dc979d037d62"
