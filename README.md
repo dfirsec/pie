@@ -14,13 +14,13 @@ poetry install
 
 ## Dependencies
 
-- colorama
+- rich
 - pdfplumber
 - requests
 
 ## Usage
 
-```
+```console
 poetry shell
 python pie.py [-h] [-o] pdf_doc
 ```
