@@ -162,7 +162,7 @@ class PDFWorker:
 
         try:
             response = Prompt.ask(
-                ":thinking_face: The TLDS file is missing, would you like to download the file? (yes/no)"
+                ":thinking_face: The TLDS file is missing, would you like to download the file? (yes/no)",
             )
             if response.strip().lower() in ["yes", "y"]:
                 console.print(":stopwatch:  Downloading file... ")
@@ -198,7 +198,7 @@ class PDFWorker:
         if delta > age_limit:
             try:
                 response = Prompt.ask(
-                    f":thinking_face: TLDS file is older than {age_limit_days} days, would you like to update it? (yes/no)"
+                    f":thinking_face: TLDS file is older than {age_limit_days} days, would you like to update it? (yes/no)",
                 )
                 if response.strip().lower() in ["yes", "y"]:
                     console.print(":stopwatch:  Updating file... ")
