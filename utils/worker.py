@@ -1,11 +1,12 @@
-import sys
+"""Worker module to process PDF files and extract text."""
+
 from datetime import UTC
 from datetime import datetime
 from datetime import timedelta
 from pathlib import Path
 
-import pdfplumber
 import requests
+from pdfminer.high_level import extract_text
 from rich.console import Console
 from rich.prompt import Prompt
 
@@ -23,87 +24,84 @@ class PDFWorker:
 
     def __init__(self) -> None:
         """Initialize match counter and TLDs filename."""
-        self.counter = 0
-        self.tlds_filename = "tlds-alpha-by-domain.txt"
+        self.counter: int = 0
+        self.tlds_filename: str = "tlds-alpha-by-domain.txt"
+        self._valid_tlds: set[str] | None = None
 
-    def extractor(self, pdf: str) -> list:
-        """Open the PDF file and extract the text from each page.
+    def extractor(self, pdf: Path) -> list[str | None]:
+        """Open the PDF file and extract the text.
 
         If the file size is greater than 10 MB, exit the program with an error message.
 
         Args:
-            pdf (str): The PDF file to be read
+            pdf: The PDF file to be read
 
         Returns:
-            list: A list of text from each page of the PDF file.
-        """
-        size = Path.stat(pdf).st_size
-        large = round(size / (1024 * 1024))
-        file_size_limit = 10240000
-        if size > file_size_limit:
-            console.print(f"[red][ERROR][/red] Limit file size to 10 MB or less. Your file is {large:,} MB.")
-            sys.exit(1)
-        else:
-            with pdfplumber.open(pdf) as pdf_file:
-                return [page.extract_text() for page in pdf_file.pages if page is not None]
+            A list of text from each page of the PDF file.
 
-    def write_file(self, results: str, opt: str, report: str | None) -> None:
-        """Write the results to the file, and close the file.
+        Raises:
+            SystemExit: If the file size is greater than 30 MB.
+        """
+        file_size_limit = 30 * 1024 * 1024  # 30 MB in bytes
+        size = pdf.stat().st_size
+        if size > file_size_limit:
+            large = round(size / (1024 * 1024))
+            console.print(f"[red][ERROR][/red] Limit file size to 10 MB or less. Your file is {large:,} MB.")
+            raise SystemExit(1)
+
+        return extract_text(pdf)
+
+    def write_file(self, results: str, mode: str, report: Path | None) -> None:
+        """Write the results to the file.
 
         Args:
-            results (str): The text that will be written to the file.
-            opt (str): 'w' for write, 'a' for append.
-            report (Optional[str]): The path to the PDF file you want to extract text from.
+            results: The text that will be written to the file.
+            mode: 'w' for write, 'a' for append.
+            report: The path to the PDF file you want to extract text from.
         """
         if report:
-            file_output = root.joinpath(f"{Path(report).name.replace(' ', '_').replace('.pdf', '')}.txt")
-            with Path(file_output, opt, encoding="utf-8").open("r") as out:
+            file_output = root / f"{report.stem.replace(' ', '_')}.txt"
+            with file_output.open(mode, encoding="utf-8") as out:
                 out.write(results)
 
-    def processor(self, pdfdoc: str, output: bool, title: str) -> None:
+    def processor(self, pdfdoc: str | Path, output: bool, title: str) -> None:
         """Extracts the text from PDF file, and writes it to a file.
 
         Args:
-            pdfdoc (str): The PDF document to be processed
-            output (bool): The output directory
-            title (str): The title of the PDF document
+            pdfdoc: The PDF document to be processed
+            output: Whether to write output to a file
+            title: The title of the PDF document
 
         Raises:
-            TypeError: If the PDF document is not a string.
+            TypeError: If there's an issue with text extraction
         """
+        pdf_path = Path(pdfdoc)
         try:
             with console.status("Gathering IOCs..."):
-                pages = list(self.extractor(pdf=pdfdoc))
-                try:
-                    text = "".join(filter(None, pages))
-                except TypeError:
-                    print(f"Broken sentence: {''.join(filter(None, pages))}")
-                    raise
-        except KeyboardInterrupt:
-            sys.exit()
+                pages = self.extractor(pdf=pdf_path)
+                text = "".join(filter(None, pages))
+        except KeyboardInterrupt as e:
+            raise SystemExit() from e
+        except TypeError as e:
+            console.print(f"[red]Error processing PDF: {e}[/red]")
+            raise
         else:
-            self.get_patterns(output, title, pdfdoc, text)  # get patterns from text
+            self.get_patterns(output, title, pdf_path, text)
 
-    def get_patterns(self, output: bool, title: str, pdfdoc: str, text: str) -> None:
+    def get_patterns(self, output: bool, title: str, pdfdoc: Path, text: str) -> None:
         """Searches for patterns in a given text and outputs the results to a file or console.
 
         Args:
-            output (bool): A boolean value indicating whether to output the results to a file or not
-            title (str): A string representing the title of the PDF document being analyzed
-            pdfdoc (str): The path or location of the PDF document being analyzed
-            text (str): The text to be analyzed for patterns and IOCs (indicators of compromise)
-
-        Returns:
-            None
+            output: A boolean value indicating whether to output the results to a file or not
+            title: A string representing the title of the PDF document being analyzed
+            pdfdoc: The path or location of the PDF document being analyzed
+            text: The text to be analyzed for patterns and IOCs (indicators of compromise)
         """
-        # header for the report
         if output:
-            self.write_file(report=title, results=f"\nTITLE: {title} \nPATH: {pdfdoc}\n", opt="w")
+            self.write_file(report=Path(title), results=f"\nTITLE: {title} \nPATH: {pdfdoc}\n", mode="w")
 
-        # detect language patterns in text.
-        self.detect_language(output, title, text)
+        self.detect_language(output, Path(title), text)
 
-        # get the patterns from the text.
         for key, pvals in helper.patts(text).items():
             if pvals:
                 sorted_patterns = sorted(set(pvals))
@@ -112,176 +110,161 @@ class PDFWorker:
 
                 if key == "DOMAIN":
                     sorted_patterns = self.process_domains(set(sorted_patterns))
+                    if not sorted_patterns:
+                        self.counter -= 1
 
-                if sorted_patterns:
-                    self.counter += 1
-                elif key == "DOMAIN":
-                    self.counter -= 1
-
-                self.print_and_write_patterns(key, set(sorted_patterns), output, title)
+                self.print_and_write_patterns(key, set(sorted_patterns), output, Path(title))
 
         if self.counter <= 0:
             console.print("[yellow]= No IOCs found =[/yellow]")
             if output:
-                self.write_file(report=title, results="= No IOCs found =", opt="w")
+                self.write_file(report=Path(title), results="= No IOCs found =", mode="w")
 
-    def detect_language(self, output: bool, title: str, text: str) -> None:
+    def detect_language(self, output: bool, title: Path, text: str) -> None:
         """Detects the language of the text.
 
         Args:
-            output (bool): boolean value indicating whether to output the results to a file or not.
-            title (str): The title of the report.
-            text (str): The text to be analyzed for languages.
+            output: boolean value indicating whether to output the results to a file or not.
+            title: The title of the report.
+            text: The text to be analyzed for languages.
         """
         detected_language = helper.detect_language(text)
         languages = {"ARABIC", "CYRILLIC", "KANJI", "CHINESE", "FARSI", "HEBREW"}
         results = ""
-        sep = "--------------"
+        sep = "-" * 14
+
         for language in languages:
             if detected_language.get(language) and (spec := "".join(detected_language[language])):
                 self.counter += 1
                 results += f"\n\n:pushpin: [bold]{language}[/bold]\n[grey50]{sep}[/grey50]\n{spec}"
 
         if output and results:
-            self.write_file(report=title, results=results, opt="a")
+            self.write_file(report=title, results=results, mode="a")
         console.print(results)
 
-    def tlds_file(self, age_limit_days: int = 3) -> str:
+    def tlds_file(self, age_limit_days: int = 3) -> Path | None:
         """Checks for TLDS file.
 
         Args:
-            age_limit_days (int, optional): The age limit in days. Defaults to 3.
+            age_limit_days: The age limit in days. Defaults to 3.
 
         Returns:
-            str: The path to the TLDS file.
+            The path to the TLDS file if it exists or was downloaded, None otherwise.
         """
         filepath = Path(self.tlds_filename)
         if filepath.exists():
-            self.check_tlds_file_age(filepath, age_limit_days, self.tlds_filename)
-            return None
+            self.check_tlds_file_age(filepath, age_limit_days)
+            return filepath
 
         try:
             response = Prompt.ask(
-                ":thinking_face: The TLDS file is missing, would you like to download the file? (yes/no)",
+                ":thinking_face: The TLDS file is missing, would you like to download the file?",
+                choices=["yes", "no"],
+                default="no",
             )
-            if response.strip().lower() in ["yes", "y"]:
-                console.print(":stopwatch:  Downloading file... ")
-                self.download_tlds(self.tlds_filename)
-                console.print(f":thumbsup: The file '{self.tlds_filename}' has been downloaded and saved.\n")
-            else:
-                console.print(":disappointed: Skipped downloading TLDS file.\n")
-                return ""
+            if response.lower() == "yes":
+                self.download_tlds_and_print_message(
+                    ":stopwatch:  Downloading file... ",
+                    ":thumbsup: The file '",
+                    "' has been downloaded and saved.\n",
+                )
+                return filepath
+
+            console.print(":disappointed: Skipped downloading TLDS file.\n")
         except KeyboardInterrupt:
             console.print("\n:disappointed: Skipped downloading TLDS file.\n")
-            return ""
+            return None
         else:
-            return str(filepath.resolve())
+            return None
 
-    def check_tlds_file_age(self, filepath: Path, age_limit_days: int, filename: str) -> None:
+    def check_tlds_file_age(self, filepath: Path, age_limit_days: int) -> None:
         """Checks the age of the TLDS file.
 
         Args:
-            filepath (Path): The path to the TLDS file.
-            age_limit_days (int): The age limit in days.
-            filename (str): The name of the TLDS file.
-
-        Returns:
-            None
+            filepath: The path to the TLDS file.
+            age_limit_days: The age limit in days.
         """
         mtime = filepath.stat().st_mtime
         mtime_datetime = datetime.fromtimestamp(mtime, tz=UTC)
-
         now = datetime.now(tz=UTC)
         delta = now - mtime_datetime
-        age_limit = timedelta(days=age_limit_days)  # default is 3 days
+        age_limit = timedelta(days=age_limit_days)
 
         if delta > age_limit:
             try:
                 response = Prompt.ask(
-                    f":thinking_face: TLDS file is older than {age_limit_days} days, would you like to update it? (yes/no)",
+                    f":thinking_face: TLDS file is older than {age_limit_days} days, " "would you like to update it?",
+                    choices=["yes", "no"],
+                    default="no",
                 )
-                if response.strip().lower() in ["yes", "y"]:
-                    console.print(":stopwatch:  Updating file... ")
-                    self.download_tlds(filename)
-                    console.print(f":thumbsup: The file {filename} has been updated and saved.\n")
+                if response.lower() == "yes":
+                    self.download_tlds_and_print_message(
+                        ":stopwatch:  Updating file... ",
+                        ":thumbsup: The file ",
+                        " has been updated and saved.\n",
+                    )
                 else:
                     console.print(":disappointed: Skipped updating TLDS file.\n")
             except KeyboardInterrupt:
                 console.print("\n:disappointed: Skipped updating TLDS file.\n")
 
-    def download_tlds(self, filename: str) -> str | None:
-        """Downloads TLDS file, saves it to a file, and returns the path to the file.
+    def download_tlds_and_print_message(self, arg0: str, arg1: str, arg2: str) -> None:
+        """Downloads the TLDS file and prints a message."""
+        console.print(arg0)
+        self.download_tlds()
+        console.print(f"{arg1}{self.tlds_filename}{arg2}")
 
-        Args:
-            filename (str): The name of the file to be downloaded.
-
-        Returns:
-            The path to the downloaded file.
-        """
+    def download_tlds(self) -> None:
+        """Downloads TLDS file and saves it."""
         url = "https://data.iana.org/TLD/tlds-alpha-by-domain.txt"
-        filepath = Path(filename)
+        filepath = Path(self.tlds_filename)
 
         try:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
+            filepath.write_bytes(response.content)
+            self._valid_tlds = None  # Reset cached valid_tlds
         except requests.exceptions.RequestException as err:
-            print(f"Error downloading file: {err}")
-            return None
-
-        with Path(filepath).open("wb") as fileobj:
-            fileobj.write(response.content)
-        return str(filepath.resolve())
+            console.print(f"[red]Error downloading file: {err}[/red]")
 
     @property
     def valid_tlds(self) -> set[str]:
-        """Returns a set of valid top-level domains (TLDs).
-
-        Returns:
-            set: A set of valid top-level domains (TLDs).
-        """
-        valid_tlds = set()
-        tlds = Path(self.tlds_filename)
-        if not tlds.exists():
-            return valid_tlds
-        with tlds.open(encoding="utf-8") as fileobj:
-            for line in fileobj:
-                tld = line.strip().lower()
-                if tld and not tld.startswith("#"):
-                    valid_tlds.add(tld)
-        return valid_tlds
+        """Returns a set of valid top-level domains (TLDs)."""
+        if self._valid_tlds is None:
+            self._valid_tlds = set()
+            tlds = Path(self.tlds_filename)
+            if tlds.exists():
+                with tlds.open(encoding="utf-8") as fileobj:
+                    self._valid_tlds = {
+                        line.strip().lower() for line in fileobj if line.strip() and not line.startswith("#")
+                    }
+        return self._valid_tlds
 
     def process_domains(self, sorted_patterns: set[str]) -> set[str]:
         """Filters a set of domain patterns based on their top-level domain.
 
         Args:
-            sorted_patterns (Set[str]): Domain names, sorted in alphabetical order.
+            sorted_patterns: Domain names, sorted in alphabetical order.
 
         Returns:
             A set of domain names that have valid top-level domains (TLDs) and are not
             in the excluded list of TLDs.
         """
-        new_patterns = set()
-        exclude = ("gov", "foo", "py", "zip")  # add excluded tlds here
-        for domain in sorted_patterns:
-            tld = domain.split(".")[-1].lower()
-            if tld in self.valid_tlds and tld not in exclude:
-                new_patterns.add(domain)
-        return new_patterns
+        exclude = {"gov", "foo", "py", "zip"}  # add excluded tlds here
+        return {domain for domain in sorted_patterns if domain.split(".")[-1].lower() in self.valid_tlds - exclude}
 
-    def print_and_write_patterns(self, key: str, patterns: set[str], output: bool, title: str) -> None:
+    def print_and_write_patterns(self, key: str, patterns: set[str], output: bool, title: Path) -> None:
         """Prints and writes the patterns to a file if output is True.
 
         Args:
-            key (str): The key or identifier for the patterns.
-            patterns (Set[str]): A set of strings representing patterns that have been found.
-            output (bool): Whether the results should be written to a file or not.
-            title (str): The title of the report that will be written to a file.
-
-        Returns:
-            None
+            key: The key or identifier for the patterns.
+            patterns: A set of strings representing patterns that have been found.
+            output: Whether the results should be written to a file or not.
+            title: The title of the report that will be written to a file.
         """
-        if pattern := "\n".join(patterns):
-            sep = "--------------"
-            console.print(f"\n:pushpin: {key}\n[grey50]{sep}[/grey50]\n{pattern}")
+        if patterns:
+            sep = "-" * 14
+            pattern_str = "\n".join(patterns)
+            console.print(f"\n:pushpin: {key}\n[grey50]{sep}[/grey50]\n{pattern_str}")
             if output:
-                self.write_file(report=title, results=f"\n{key}\n{'-' * 15}\n{pattern}\n", opt="a")
+                self.write_file(report=title, results=f"\n{key}\n{sep}\n{pattern_str}\n", mode="a")

@@ -6,7 +6,7 @@ Quick method to extract Indicators of Compromise (IOCs) from an Threat Intel Rep
 
 ## Installation
 
-```text
+```sh
 git clone https://github.com/dfirsec/pie.git
 cd pie
 poetry install
@@ -20,7 +20,7 @@ poetry install
 
 ## Usage
 
-```console
+```sh
 poetry shell
 python pie.py [-h] [-o] pdf_doc
 ```

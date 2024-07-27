@@ -7,11 +7,10 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
-pdfplumber = "^0.11.0"
-pdfminer-six = "^20231228"
-requests = "^2.32.0"
-rich = "^13.7.0"
+python = "^3.12"
+pdfminer-six = "^20240706"
+requests = "^2.32.3"
+rich = "^13.7.1"
 
 
 [build-system]

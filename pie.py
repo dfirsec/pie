@@ -39,7 +39,7 @@ def main() -> None:
 
     title = Path(args.pdf_doc).name  # get filename for report title
     worker = PDFWorker()  # instantiate PDFWorker class
-    worker.tlds_file() # check for the tlds file and download if needed.
+    worker.tlds_file()  # check for the tlds file and download if needed.
     worker.processor(pdfdoc=args.pdf_doc, output=args.output, title=title)  # process PDF document
 
 
