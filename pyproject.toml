@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 pdfminer-six = "^20240706"
-requests = "^2.32.3"
+requests = "^2.32.4"
 rich = "^13.7.1"
 
 
