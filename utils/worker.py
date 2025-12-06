@@ -81,7 +81,7 @@ class PDFWorker:
                 pages = self.extractor(pdf=pdf_path)
                 text = "".join(filter(None, pages))
         except KeyboardInterrupt as e:
-            raise SystemExit() from e
+            raise SystemExit from e
         except TypeError as e:
             console.print(f"[red]Error processing PDF: {e}[/red]")
             raise
