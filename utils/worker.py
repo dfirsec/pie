@@ -193,7 +193,7 @@ class PDFWorker:
         if delta > age_limit:
             try:
                 response = Prompt.ask(
-                    f":thinking_face: TLDS file is older than {age_limit_days} days, " "would you like to update it?",
+                    f":thinking_face: TLDS file is older than {age_limit_days} days, would you like to update it?",
                     choices=["yes", "no"],
                     default="no",
                 )
