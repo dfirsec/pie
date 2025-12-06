@@ -42,48 +42,76 @@ class Helpers:
         },
         "net-related": {
             "ipv4": re.compile(
-                r"(((?![0])(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\[\.\]|\.))){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)",
+                r"""
+                (((?![0])(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\[\.\]|\.))){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
+                """,
             ),
             "mac": re.compile(r"^[a-fA-F0-9]{2}(:[a-fA-F0-9]{2}){5}$"),
         },
         "web-related": {
             "domain": re.compile(
-                r"([A-Za-z0-9]+(?:[\-|\.|][A-Za-z0-9]+)*(?:\[\.\]|\.)(?![a-z-]*.[i\.e]$"
-                r"|[e\.g]$)(?:[a-z]"
-                r"{2,4})\b|(?:\[\.\][a-z]{2,4})(?!@)$)",
+                r"""
+                ([A-Za-z0-9]+(?:[\-|\.|][A-Za-z0-9]+)*(?:\[\.\]|\.)(?![a-z-]*.[i\.e]$
+                |[e\.g]$)(?:[a-z]{2,4})\b|(?:\[\.\][a-z]{2,4})(?!@)$)
+                """,
             ),
             "email": re.compile(r"\b[A-Z0-9][A-Z0-9._%+-]*@(?:[A-Z0-9-]+\.)+[A-Z]{2,}\b", re.IGNORECASE),
             "url": re.compile(
-                r"(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z]{2,63}\b"
-                r"(?:[-a-zA-Z0-9@:%_\+.~#?&\/\/=\*]*))",
+                r"""
+                (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z]{2,63}\b
+                (?:(?!\.?http)[-a-zA-Z0-9@:%_\+.~#?&//=*\n\r])* (?<!\.))
+                """,
+                re.VERBOSE | re.MULTILINE,
             ),
             "webfile": re.compile(
-                r"(([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+(\.|\[\.\])(hta|html|htm|htmls|java|jsp|js|php|asp|aspx))$",
+                r"""
+                (([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+(\.|\[\.\])(hta|html|htm|htmls|java|jsp|js|php|asp|aspx))$
+                """,
+                re.IGNORECASE,
             ),
         },
         "file-related": {
             "archive": re.compile(
-                r"(([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+(\.|\[\.\])(zip|7z|jar|gz|rar|xz|tar|tar\.gz))",
+                r"""
+                (([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+(\.|\[\.\])(zip|7z|jar|gz|rar|xz|tar|tar\.gz))
+                """,
+                re.IGNORECASE,
             ),
             "binary": re.compile(
-                r"(([^\s|\W])+([a-z-A-Z0-9\-\_]|[\u4E00-\u9FFF]|[\u0400-\u04FF])+((?:\.exe)|"
-                r"(?:\.msi)|(?:\.dll)|(?:\.bin)))",
+                r"""
+                (([^\s|\W])+([a-z-A-Z0-9\-\_]|[\u4E00-\u9FFF]|[\u0400-\u04FF])+((?:\.exe)|
+                (?:\.msi)|(?:\.dll)|(?:\.bin)))
+                """,
+                re.IGNORECASE,
             ),
             "env_var": re.compile(r"(\%+[a-zA-Z0-9]+\%.*[^\"])"),
             "image": re.compile(
-                r"(([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+(\.|\[\.\])(bmp|gif|jpg|jpeg|png|svg|tiff|wepb))",
+                r"""
+                (([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+(\.|\[\.\])(bmp|gif|jpg|jpeg|png|svg|tiff|wepb))
+                """,
+                re.IGNORECASE,
             ),
             "misc_file": re.compile(r"(([^\s|\W])+([a-z-A-Z0-9\-\_])+((?:\.txt)|(?:\.csv)))"),
-            "office": re.compile(r"(([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+\.(doc|docx|xls|xlsx|pdf))"),
+            "office": re.compile(
+                r"""
+                (([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+\.(doc|docx|xls|xlsx|pdf))
+                """,
+                re.IGNORECASE,
+            ),
             "script": re.compile(
-                r"(([^\s|(\"])+[a-z-A-Z0-9\-\_]+((?:\.vbs)|(?:\.sh)|(?:\.bat)|(?:\.ps1)|(?:\.py)))",
+                r"""
+                (([^\s|(\"])+[a-z-A-Z0-9\-\_]+((?:\.vbs)|(?:\.sh)|(?:\.bat)|(?:\.ps1)|(?:\.py)))
+                """,
+                re.IGNORECASE,
             ),
             "windir": re.compile(r"\b[a-zA-Z]{1}:\\?\\(?:\w+\\?).+$"),
         },
         "misc": {
             "btc": re.compile(r"(^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$)"),
             "base64": re.compile(
-                r"(^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$)",
+                r"""
+                (^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$)
+                """,
             ),
             "geolocation": re.compile(r"^((\-?|\+?)?\d+(\.\d+)?),\s*((\-?|\+?)?\d+(\.\d+)?)$"),
         },
@@ -92,19 +120,24 @@ class Helpers:
                 r"(^(\d+)\s?([A-Za-z](?=\s))?\s(.*?)\s([^ ]+?)\s?((?<=\s)APT)?\s?((?<=\s)\d*)?$)",
             ),
             "cc": re.compile(
-                r"^(?:4[0-9]{12}(?:[0-9]{3})?|(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}"
-                r"|27[01][0-9]|2720)[0-9]{12}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}"
-                r"|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$",
+                r"""
+                ^(?:4[0-9]{12}(?:[0-9]{3})?|(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}
+                |27[01][0-9]|2720)[0-9]{12}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}
+                |3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$
+                """,
             ),
             "phone": re.compile(
-                r"(^(?:(?<![\d-])(?:\+?\d{1,3}[-.\s*]?)?(?:\(?\d{3}\)?[-.\s*]?)?\d{3}[-.\s*]"
-                r"?\d{4}(?![\d-]))|(?:("
-                r"?<![\d-])(?:(?:\(\+?\d{2}\))|(?:\+?\d{2}))\s*\d{2}\s*\d{3}\s*\d{4}(?![\d-]))\$)",
+                r"""
+                (^(?:(?<![\d-])(?:\+?\d{1,3}[-.\s*]?)?(?:\(?\d{3}\)?[-.\s*]?)?\d{3}[-.\s*]?\d{4}(?![\d-]))|
+                (?:(?<![\d-])(?:(?:\(\+?\d{2}\))|(?:\+?\d{2}))\s*\d{2}\s*\d{3}\s*\d{4}(?![\d-]))\$)
+                """,
             ),
             "po_box": re.compile(r"P\.? ?O\.? Box \d+"),
             "ssn": re.compile(
-                r"((?!000|666|333)0*(?:[0-6][0-9][0-9]|[0-7][0-6][0-9]|[0-7][0-7][0-2])[- ]"
-                r"(?!00))[0-9]{2}[- ](?!0000)[0-9]{4}",
+                r"""
+                ((?!000|666|333)0*(?:[0-6][0-9][0-9]|[0-7][0-6][0-9]|[0-7][0-7][0-2])
+                [- ](?!00))[0-9]{2}[- ](?!0000)[0-9]{4}
+                """,
             ),
             "zip_code": re.compile(r"\b\d{5}(?:[-\s]\d{4})?\b"),
         },
@@ -141,7 +174,7 @@ class Helpers:
         Returns:
             An iterator over all the matches of a regex in a string
         """
-        yield from (match.group() for match in regex.finditer(text.lower()))
+        yield from (match.group() for match in regex.finditer(text))
 
     @classmethod
     def detect_language(
@@ -208,7 +241,21 @@ class Helpers:
             "WIN DIR": ("file-related", "windir"),
         }
 
-        return {
-            pattern_type: cls.reiter(cls.regex(category, pattern_name), text)
-            for pattern_type, (category, pattern_name) in pattern_mappings.items()
-        }
+        # return {
+        #     pattern_type: cls.reiter(cls.regex(category, pattern_name), text)
+        #     for pattern_type, (category, pattern_name) in pattern_mappings.items()
+        # }
+
+        results = {}
+        for pattern_type, (category, pattern_name) in pattern_mappings.items():
+            # Get the raw iterator
+            iterator = cls.reiter(cls.regex(category, pattern_name), text)
+
+            # CRITICAL FIX: If it's a URL, clean the newlines/whitespace
+            if pattern_type == "URL":
+                # We wrap the iterator to replace whitespace on the fly
+                iterator = (u.replace("\n", "").replace("\r", "").strip() for u in iterator)
+
+            results[pattern_type] = iterator
+
+        return results
