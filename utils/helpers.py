@@ -52,13 +52,13 @@ class Helpers:
                 r"|[e\.g]$)(?:[a-z]"
                 r"{2,4})\b|(?:\[\.\][a-z]{2,4})(?!@)$)",
             ),
-            "email": re.compile(r"\b[A-Z0-9][A-Z0-9._%+-]*@(?:[A-Z0-9-]+\.)+[A-Z]{2,}\b"),
+            "email": re.compile(r"\b[A-Z0-9][A-Z0-9._%+-]*@(?:[A-Z0-9-]+\.)+[A-Z]{2,}\b", re.IGNORECASE),
             "url": re.compile(
-                r"(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]"
-                r"{1,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=\*]*))",
+                r"(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z]{2,63}\b"
+                r"(?:[-a-zA-Z0-9@:%_\+.~#?&\/\/=\*]*))",
             ),
             "webfile": re.compile(
-                r"(([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+(\.|\[\.\])(hta|html|htm|htmls|java|jsp|js|php|asp$|aspx))",
+                r"(([^\s|\d\W*])+[a-z-A-Z0-9\-\_ ]+(\.|\[\.\])(hta|html|htm|htmls|java|jsp|js|php|asp|aspx))$",
             ),
         },
         "file-related": {
