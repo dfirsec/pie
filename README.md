@@ -2,14 +2,36 @@
 
 ![Generic badge](https://img.shields.io/badge/python-3.7+-blue.svg) [![Twitter](https://img.shields.io/badge/Twitter-@pulsecode-blue.svg)](https://twitter.com/pulsecode)
 
-Quick method to extract Indicators of Compromise (IOCs) from an Threat Intel Report in PDF format.  It can output the results to a file or to the console.
+Quick method to extract Indicators of Compromise (IOCs) from a Threat Intel Report in PDF format. It can output the results to a file or to the console.
+
+## Prerequisites
+
+Relies on `uv` for dependency management. If you don't have it installed, use one of the following methods:
+
+### macOS / Linux
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### Windows
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+### Pip
+
+```bash
+pip install uv
+```
 
 ## Installation
 
-```sh
+```bash
 git clone https://github.com/dfirsec/pie.git
 cd pie
-poetry install
+uv sync
 ```
 
 ## Dependencies
@@ -20,8 +42,21 @@ poetry install
 
 ## Usage
 
-```sh
-poetry shell
+Run the script directly using `uv run`:
+
+```bash
+uv run pie.py [-h] [-o] pdf_doc
+```
+
+Another option is to activate the environment manually:
+
+```bash
+# macOS/Linux
+source .venv/bin/activate
+
+# Windows
+.venv\Scripts\activate
+
 python pie.py [-h] [-o] pdf_doc
 ```
 
@@ -36,8 +71,8 @@ python pie.py [-h] [-o] pdf_doc
 
 ### Example run
 
-```text
-python pie.py Intel_Report.pdf
+```console
+$ uv run pie.py Intel_Report.pdf
 
         ____     ____   ______
        / __ \   /  _/  / ____/
