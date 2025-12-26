@@ -31,7 +31,7 @@ class PDFWorker:
     def extractor(self, pdf: Path) -> str:
         """Open the PDF file and extract the text.
 
-        If the file size is greater than 10 MB, exit the program with an error message.
+        If the file size is greater than 30 MB, exit the program with an error message.
 
         Args:
             pdf: The PDF file to be read
@@ -46,7 +46,7 @@ class PDFWorker:
         size = pdf.stat().st_size
         if size > file_size_limit:
             large = round(size / (1024 * 1024))
-            console.print(f"[red][ERROR][/red] Limit file size to 10 MB or less. Your file is {large:,} MB.")
+            console.print(f"[red][ERROR][/red] Limit file size to 30 MB or less. Your file is {large:,} MB.")
             raise SystemExit(1)
 
         return extract_text(pdf)
@@ -103,17 +103,15 @@ class PDFWorker:
 
         for key, pvals in helper.patts(text).items():
             if pvals:
-                # Convert to set and sort once
+                # Convert to set once
                 unique_patterns = set(pvals)
-                if unique_patterns:
-                    self.counter += 1
-
+                
                 if key == "DOMAIN":
                     unique_patterns = self.process_domains(unique_patterns)
-                    if not unique_patterns:
-                        self.counter -= 1
-
+                
+                # Only increment counter and print if we have patterns after processing
                 if unique_patterns:
+                    self.counter += 1
                     sorted_patterns = sorted(unique_patterns)
                     self.print_and_write_patterns(key, sorted_patterns, output, Path(title))
 
