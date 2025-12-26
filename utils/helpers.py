@@ -241,21 +241,13 @@ class Helpers:
             "WIN DIR": ("file-related", "windir"),
         }
 
-        # return {
-        #     pattern_type: cls.reiter(cls.regex(category, pattern_name), text)
-        #     for pattern_type, (category, pattern_name) in pattern_mappings.items()
-        # }
-
-        results = {}
-        for pattern_type, (category, pattern_name) in pattern_mappings.items():
-            # Get the raw iterator
-            iterator = cls.reiter(cls.regex(category, pattern_name), text)
-
-            # CRITICAL FIX: If it's a URL, clean the newlines/whitespace
-            if pattern_type == "URL":
-                # We wrap the iterator to replace whitespace on the fly
-                iterator = (u.replace("\n", "").replace("\r", "").strip() for u in iterator)
-
-            results[pattern_type] = iterator
-
-        return results
+        # Use dictionary comprehension with conditional URL whitespace cleaning
+        return {
+            pattern_type: (
+                # Clean whitespace from URLs on the fly
+                (u.replace("\n", "").replace("\r", "").strip() for u in cls.reiter(cls.regex(category, pattern_name), text))
+                if pattern_type == "URL"
+                else cls.reiter(cls.regex(category, pattern_name), text)
+            )
+            for pattern_type, (category, pattern_name) in pattern_mappings.items()
+        }

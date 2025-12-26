@@ -28,7 +28,7 @@ class PDFWorker:
         self.tlds_filename: str = "tlds-alpha-by-domain.txt"
         self._valid_tlds: set[str] | None = None
 
-    def extractor(self, pdf: Path) -> list[str | None]:
+    def extractor(self, pdf: Path) -> str:
         """Open the PDF file and extract the text.
 
         If the file size is greater than 10 MB, exit the program with an error message.
@@ -37,7 +37,7 @@ class PDFWorker:
             pdf: The PDF file to be read
 
         Returns:
-            A list of text from each page of the PDF file.
+            The extracted text from the PDF file.
 
         Raises:
             SystemExit: If the file size is greater than 30 MB.
@@ -78,8 +78,7 @@ class PDFWorker:
         pdf_path = Path(pdfdoc)
         try:
             with console.status("Gathering IOCs..."):
-                pages = self.extractor(pdf=pdf_path)
-                text = "".join(filter(None, pages))
+                text = self.extractor(pdf=pdf_path)
         except KeyboardInterrupt as e:
             raise SystemExit from e
         except TypeError as e:
@@ -104,16 +103,19 @@ class PDFWorker:
 
         for key, pvals in helper.patts(text).items():
             if pvals:
-                sorted_patterns = sorted(set(pvals))
-                if sorted_patterns:
+                # Convert to set and sort once
+                unique_patterns = set(pvals)
+                if unique_patterns:
                     self.counter += 1
 
                 if key == "DOMAIN":
-                    sorted_patterns = self.process_domains(set(sorted_patterns))
-                    if not sorted_patterns:
+                    unique_patterns = self.process_domains(unique_patterns)
+                    if not unique_patterns:
                         self.counter -= 1
 
-                self.print_and_write_patterns(key, set(sorted_patterns), output, Path(title))
+                if unique_patterns:
+                    sorted_patterns = sorted(unique_patterns)
+                    self.print_and_write_patterns(key, sorted_patterns, output, Path(title))
 
         if self.counter <= 0:
             console.print("[yellow]= No IOCs found =[/yellow]")
@@ -129,12 +131,12 @@ class PDFWorker:
             text: The text to be analyzed for languages.
         """
         detected_language = helper.detect_language(text)
-        languages = {"ARABIC", "CYRILLIC", "KANJI", "CHINESE", "FARSI", "HEBREW"}
         results = ""
         sep = "-" * 14
 
-        for language in languages:
-            if detected_language.get(language) and (spec := "".join(detected_language[language])):
+        # Only iterate through languages that were actually detected
+        for language, chars in detected_language.items():
+            if chars and (spec := "".join(chars)):
                 self.counter += 1
                 results += f"\n\n:pushpin: [bold]{language}[/bold]\n[grey50]{sep}[/grey50]\n{spec}"
 
@@ -253,12 +255,12 @@ class PDFWorker:
         exclude = {"gov", "foo", "py", "zip"}  # add excluded tlds here
         return {domain for domain in sorted_patterns if domain.split(".")[-1].lower() in self.valid_tlds - exclude}
 
-    def print_and_write_patterns(self, key: str, patterns: set[str], output: bool, title: Path) -> None:
+    def print_and_write_patterns(self, key: str, patterns: list[str], output: bool, title: Path) -> None:
         """Prints and writes the patterns to a file if output is True.
 
         Args:
             key: The key or identifier for the patterns.
-            patterns: A set of strings representing patterns that have been found.
+            patterns: A list of strings representing patterns that have been found.
             output: Whether the results should be written to a file or not.
             title: The title of the report that will be written to a file.
         """
